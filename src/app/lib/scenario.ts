@@ -79,13 +79,13 @@ export function generateTrainingSpot(mode: GameMode = "HANDS"): TrainingState {
   // Opponent actions: 3 opponents do something. One “primary” villain will often bet, but sometimes all check.
   const oppNames = ["OppA","OppB","OppC"] as const;
 
-  const opponentActions = oppNames.map((name) => {
+  let opponentActions: TrainingState["opponentActions"] = oppNames.map((name) => {
     const act = simpleOpponentHeuristic(boardUpTo, street);
     if (act === "BET") {
-      return { name, action: "BET" as const, sizeBb: 0 }; // size assigned below
+      return { name, action: act, sizeBb: 0 };
     }
-    return { name, action: "CHECK" as const };
-  });
+    return { name, action: act };
+  }) as TrainingState["opponentActions"];
 
   const primary = pick([0,1,2]);
   const shouldBet = Math.random() < 0.7; // 70% have a facing bet, otherwise all check to hero
@@ -94,13 +94,13 @@ export function generateTrainingSpot(mode: GameMode = "HANDS"): TrainingState {
   const basePotMin = mode === "GAME" ? 1.2 : 4.5;
   const basePotMax = mode === "GAME" ? 5 : 9.5;
   let potBb = randRange(basePotMin, basePotMax);
-  let facing: { type: "BET"; sizeBb: number } | null = null;
+  let facing: { type: "BET" | "RAISE"; sizeBb: number } | null = null;
 
   if (shouldBet) {
     opponentActions[primary] = { name: oppNames[primary], action: street === "PREFLOP" ? "RAISE" : "BET", sizeBb: 0 };
     const betSizeBb = pickBetSizeBb(potBb, street);
     opponentActions[primary] = { ...opponentActions[primary], sizeBb: betSizeBb };
-    facing = { type: street === "PREFLOP" ? "RAISE" as const : "BET" as const, sizeBb: betSizeBb };
+    facing = { type: street === "PREFLOP" ? "RAISE" : "BET", sizeBb: betSizeBb };
     potBb = Math.round((potBb + betSizeBb) * 10) / 10;
   } else {
     for (let i = 0; i < opponentActions.length; i++) {

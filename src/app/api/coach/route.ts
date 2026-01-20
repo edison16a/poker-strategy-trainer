@@ -189,7 +189,7 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
       ...(state.board.flop ?? []),
       state.board.turn,
       state.board.river,
-    ].filter(Boolean).map(c => c.s);
+    ].filter((c): c is Card => Boolean(c)).map(c => c.s);
     const suitCounts: Record<string, number> = {};
     suits.forEach(s => { suitCounts[s] = (suitCounts[s] ?? 0) + 1; });
     const twoTone = Object.values(suitCounts).some(c => c >= 2);
