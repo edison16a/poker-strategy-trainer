@@ -337,7 +337,7 @@ const penaltyFactorForRank = (rank: RankName | undefined) => {
                 </div>
 
                 <ActionBar
-                  disabled={loadingCoach}
+                  disabled={loadingCoach || decisionTaken}
                   callAmount={facingCall}
                   onAction={(a, raise) => {
                     judge(a, raise);
