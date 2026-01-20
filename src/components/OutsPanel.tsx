@@ -189,6 +189,7 @@ export function OutsPanel({
             <li><span>Call ½-pot</span><span>Need ~25%</span></li>
             <li><span>Call ⅔-pot</span><span>Need ~29%</span></li>
             <li><span>Call pot-sized</span><span>Need ~33%</span></li>
+            <li><span>Call 2× pot</span><span>Need ~40%</span></li>
           </ul>
         </div>
       )}

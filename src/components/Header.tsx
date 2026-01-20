@@ -2,6 +2,7 @@
 
 import type { GameMode } from "@/lib/types";
 import { Brain, BarChart3, SkipForward, Gamepad2 } from "lucide-react";
+import clsx from "clsx";
 
 const MODE_LABELS: Record<GameMode, string> = {
   HANDS: "Hands",
@@ -35,21 +36,21 @@ export function Header({
       </div>
 
       <div className="header-actions">
-        <div className="mode-select">
-          <div className="mode-select-shell">
+        <div className="mode-toggle">
+          <div className="mode-toggle-shell">
             <Gamepad2 className="icon" />
-            <select
-              value={gameMode}
-              onChange={(e) => onChangeMode(e.target.value as GameMode)}
-              aria-label="Select game mode"
-            >
-              {Object.entries(MODE_LABELS).map(([key, label]) => (
-                <option value={key} key={key}>
-                  {label}
-                </option>
+            <div className="mode-toggle-buttons" role="group" aria-label="Game mode">
+              {(Object.keys(MODE_LABELS) as GameMode[]).map((key, idx, arr) => (
+                <button
+                  key={key}
+                  className={clsx("mode-btn", key === gameMode && "active", idx === 0 && "first", idx === arr.length - 1 && "last")}
+                  onClick={() => onChangeMode(key)}
+                  type="button"
+                >
+                  {MODE_LABELS[key]}
+                </button>
               ))}
-            </select>
-            <span className="mode-caret">▾</span>
+            </div>
           </div>
         </div>
 

@@ -172,6 +172,17 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
     else if (pairRank >= boardHigh - 1) madeBoost += 2;
   }
 
+  const vulnerabilityPenalty = (() => {
+    if (heroEval.category === "ONE_PAIR") {
+      const pairRank = heroEval.scoreVector[1] ?? 0;
+      const boardHigh = Math.max(...boardRanks(state), 0);
+      if (pairRank < boardHigh - 1) return 8;
+      if (pairRank < boardHigh) return 6;
+    }
+    if (heroEval.category === "HIGH_CARD") return 10;
+    return 0;
+  })();
+
   const texturePenalty = (() => {
     const board = boardRanks(state);
     const suits = [
@@ -214,8 +225,12 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
     if (oppAggression >= 2 && equity < 55) discipline -= 4;
   }
 
-  const scoreBase = 54 + edge * 0.45 + posAggression + discipline + madeBoost * 0.5 - texturePenalty;
-  const score = clampScore(scoreBase + alignment + 10); // bias upward so best decisions land 80+
+  const scoreBase = 52 + edge * 0.35 + posAggression + discipline + madeBoost * 0.45 - texturePenalty - vulnerabilityPenalty;
+  let score = clampScore(scoreBase + alignment + 10); // bias upward so best decisions land 80+
+
+  // If user matched the best action, ensure they are not graded below 50 (correct line even if thin/losing).
+  const matchedBest = (heroAction === "RAISE" && bestAction === "raise") || (heroAction === "CALL" && bestAction === "call") || (heroAction === "FOLD" && bestAction === "fold");
+  if (matchedBest) score = Math.max(score, 50);
   const verdict: CoachResponse["verdict"] =
     score >= 95 ? "perfect"
     : score >= 80 ? "great"
@@ -241,9 +256,16 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
   reasons.push(...equityInfo.notes);
   if (state.facing) {
     reasons.push(`Facing ${state.facing.type.toLowerCase()} of ~${facingPctPot.toFixed(1)}% pot; opponents aggression: ${oppAggression} bets/raises.`);
+    const requiredEquity = potOdds;
+    reasons.push(`Pot odds math: calling ${state.facing.sizeBb.toFixed(2)} into ${state.potBb.toFixed(2)} needs ~${requiredEquity.toFixed(1)}% equity; your line assumes ~${equity.toFixed(1)}%, so EV is ${edge >= 0 ? "positive" : "negative"} over time.`);
   }
   if (state.outsInfo) {
     reasons.push(`Draws: ${state.outsInfo.correctOuts} outs (${state.outsInfo.drawLabel}) ≈ ${state.outsInfo.equityApproxPct}% to improve.`);
+    if (state.facing) {
+      reasons.push(`Rule of 4/2 check: outs imply ~${state.outsInfo.equityApproxPct}% by river; compare to the ~${potOdds.toFixed(1)}% needed to justify a call/raise this street.`);
+    } else {
+      reasons.push(`With no bet to face, your draw equity (~${state.outsInfo.equityApproxPct}%) makes betting an option to add fold equity or checking to realize your card for free.`);
+    }
   }
   reasons.push(
     bestAction === "raise"
@@ -252,7 +274,7 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
       ? `Calling keeps dominated hands in; ${heroStr}${boardStr ? ` retains ~${equity.toFixed(1)}% versus the price` : ""}.`
       : `Folding is best: ${heroStr} lacks equity versus the price and aggression shown.`
   );
-  const trimmedReasons = reasons.slice(0, 4);
+  const trimmedReasons = reasons.slice(0, 6);
 
   const conceptTags: string[] = [
     edge >= 0 ? "pot-odds+" : "pot-odds-",

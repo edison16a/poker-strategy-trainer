@@ -486,58 +486,62 @@ input {
   gap: 10px;
 }
 
-.mode-select {
+.mode-toggle {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: 120px;
-  max-width: 120px;
-  min-width: 120px;
-  flex: 0 0 120px;
+  flex: 0 0 auto;
 }
 
-.mode-select-shell {
+.mode-toggle-shell {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 38px;
-  width: 100%;
-  padding: 0 10px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background:
-    linear-gradient(140deg, rgba(34, 211, 238, 0.14), rgba(52, 211, 153, 0.12)),
-    rgba(255, 255, 255, 0.03);
-  box-shadow: 0 14px 36px rgba(34, 211, 238, 0.16);
-  color: #f5f7ff;
-  cursor: pointer;
-}
-
-.mode-select-shell select {
-  appearance: none;
-  background: transparent;
+  height: 42px;
+  padding: 4px 6px;
+  border-radius: 14px;
   border: none;
-  color: inherit;
-  font-weight: 700;
-  width: 100%;
-  padding-right: 18px;
-  outline: none;
-  cursor: pointer;
+  background: transparent;
+  box-shadow: none;
 }
 
-.mode-select-shell:hover {
-  border-color: var(--border-strong);
-  box-shadow: 0 16px 40px rgba(52, 211, 153, 0.16);
-}
-
-.mode-caret {
-  font-size: 18px;
-  line-height: 1.1;
+.mode-toggle-buttons {
   display: flex;
   align-items: center;
-  color: var(--muted);
-  transform: translateY(-2px);
-  font-weight: 800;
+}
+
+.mode-btn {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5f7ff;
+  padding: 8px 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  margin-left: -1px;
+}
+
+.mode-btn.first {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  margin-left: 0;
+}
+
+.mode-btn.last {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.mode-btn:hover {
+  border-color: var(--border-strong);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mode-btn.active {
+  border-color: rgba(52, 211, 153, 0.5);
+  background: linear-gradient(140deg, rgba(34, 211, 238, 0.2), rgba(52, 211, 153, 0.18));
+  color: #e6fff5;
+  box-shadow: 0 10px 26px rgba(34, 211, 238, 0.24);
 }
 
 .icon {

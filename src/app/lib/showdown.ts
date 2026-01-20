@@ -1,5 +1,5 @@
 import type { Card, PlayerAction } from "./types";
-import { rankValue } from "./cards";
+import { cardToString, rankValue } from "./cards";
 
 const CATEGORY_STRENGTH = {
   HIGH_CARD: 0,
@@ -37,6 +37,10 @@ export type ShowdownResult = {
   heroWouldResult: "win" | "lose" | "chop";
   heroFolded: boolean;
   heroAction: PlayerAction;
+  decisionBoard: { flop: [Card, Card, Card] | null; turn: Card | null; river: Card | null };
+  heroAheadAtDecision: boolean;
+  runoutNote: string;
+  runoutDetail: string;
 };
 
 function rankLabel(v: number) {
@@ -206,14 +210,21 @@ export function resolveShowdown({
   board,
   heroFolded,
   heroAction,
+  decisionBoard,
 }: {
   heroHand: [Card, Card];
   opponents: Array<{ name: string; hand: [Card, Card] }>;
   board: { flop: [Card, Card, Card]; turn: Card; river: Card };
   heroFolded: boolean;
   heroAction: PlayerAction;
+  decisionBoard: { flop: [Card, Card, Card] | null; turn: Card | null; river: Card | null };
 }): ShowdownResult {
   const boardCards: Card[] = [...board.flop, board.turn, board.river];
+  const decisionCards: Card[] = [
+    ...(decisionBoard.flop ?? []),
+    decisionBoard.turn,
+    decisionBoard.river,
+  ].filter(Boolean) as Card[];
 
   const players: PlayerShowdown[] = [
     {
@@ -239,6 +250,74 @@ export function resolveShowdown({
   const activePlayers = heroFolded ? players.filter(p => !p.isHero) : players;
   const activeWinners = bestHands(activePlayers);
 
+  const decisionPlayers: PlayerShowdown[] = [
+    {
+      id: "hero",
+      name: "You",
+      isHero: true,
+      hand: heroHand,
+      evaluation: evaluateHand([...heroHand, ...decisionCards]),
+    },
+    ...opponents.map((opp, idx) => ({
+      id: opp.name ?? `opp-${idx}`,
+      name: opp.name ?? `Opp ${idx + 1}`,
+      isHero: false,
+      hand: opp.hand,
+      evaluation: evaluateHand([...opp.hand, ...decisionCards]),
+    })),
+  ];
+  const decisionBest = bestHands(decisionPlayers);
+  const heroAheadAtDecision = decisionBest.some(p => p.isHero);
+  const decisionVillain = decisionBest.find(p => !p.isHero);
+  const showdownVillain = winners.find(w => !w.isHero);
+
+  let runoutNote = "";
+  if (heroFolded) {
+    runoutNote = heroAheadAtDecision
+      ? "You folded while ahead; future cards could still change, but hero was leading at decision."
+      : "Folded behind; discipline saved chips.";
+  } else if (heroAheadAtDecision && heroWouldResult === "lose") {
+    runoutNote = "Tough runout: you were ahead when you acted and got outdrawn.";
+  } else if (!heroAheadAtDecision && heroWouldResult === "win") {
+    runoutNote = "You improved to win; the runout favored your line.";
+  } else if (heroWouldResult === "chop") {
+    runoutNote = heroAheadAtDecision ? "Ahead but ended in a chop; variance evened out." : "Behind to start, chop after runout.";
+  } else if (heroAheadAtDecision) {
+    runoutNote = "Still ahead through showdown; solid line.";
+  } else {
+    runoutNote = "Was behind at decision; consider if a tighter line was better.";
+  }
+
+  const formatBoard = (b: { flop: [Card, Card, Card] | null; turn: Card | null; river: Card | null }) => {
+    const cards: Card[] = [];
+    if (b.flop) cards.push(...b.flop);
+    if (b.turn) cards.push(b.turn);
+    if (b.river) cards.push(b.river);
+    return cards.map(cardToString).join(" ");
+  };
+
+  const heroHandStr = heroHand.map(cardToString).join(" ");
+  const decisionBoardStr = formatBoard(decisionBoard);
+  const finalBoardStr = formatBoard(board);
+  const decisionOppDesc = decisionVillain
+    ? `${decisionVillain.name} (${decisionVillain.evaluation.label})`
+    : "Opponents";
+  const showdownOppDesc = showdownVillain
+    ? `${showdownVillain.name} (${showdownVillain.evaluation.label})`
+    : "Opponents";
+
+  let runoutDetail = `You held ${heroHandStr}. At decision on ${decisionBoardStr || "no board yet"}, best hand: ${decisionBest.map(p => `${p.name} (${p.evaluation.label})`).join(", ")}.`;
+  if (!heroFolded) {
+    runoutDetail += ` Final board ${finalBoardStr}. Showdown best: ${winners.map(p => `${p.name} (${p.evaluation.label})`).join(", ")}.`;
+    if (heroAheadAtDecision && heroWouldResult === "lose") {
+      runoutDetail += ` Outdrawn by ${showdownOppDesc} on turn/river.`;
+    } else if (!heroAheadAtDecision && heroWouldResult === "win") {
+      runoutDetail += ` You improved to beat ${decisionOppDesc}.`;
+    }
+  } else {
+    runoutDetail += ` You folded; final board ${finalBoardStr}.`;
+  }
+
   return {
     finalBoard: board,
     players,
@@ -247,5 +326,9 @@ export function resolveShowdown({
     heroWouldResult,
     heroFolded,
     heroAction,
+    decisionBoard,
+    heroAheadAtDecision,
+    runoutNote,
+    runoutDetail,
   };
 }

@@ -228,6 +228,7 @@ export default function Page() {
         board: currentState.fullBoard,
         heroFolded: true,
         heroAction,
+        decisionBoard: currentState.board,
       });
       setShowdown(result);
       setDecisionTaken(true);
@@ -248,6 +249,7 @@ export default function Page() {
         board: currentState.fullBoard,
         heroFolded: false,
         heroAction,
+        decisionBoard: currentState.board,
       });
       setShowdown(result);
       setDecisionTaken(true);

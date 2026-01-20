@@ -52,6 +52,7 @@ export function ShowdownPanel({ result, mode }: { result: ShowdownResult; mode: 
         </div>
         <div className={clsx("result-pill", outcomeClass)}>{outcomeLabel}</div>
       </div>
+      <div className="meta">{result.runoutNote}</div>
 
       <div className="showdown-board">
         {finalBoard.map((card, idx) => (
@@ -69,6 +70,7 @@ export function ShowdownPanel({ result, mode }: { result: ShowdownResult; mode: 
           <>Winner: {activeWinnerNames}</>
         )}
       </div>
+      <div className="meta">{result.runoutDetail}</div>
 
       <div className="showdown-players">
         {result.players.map((p) => {
