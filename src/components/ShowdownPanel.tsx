@@ -4,6 +4,7 @@ import type { GameMode } from "@/lib/types";
 import type { ShowdownResult } from "@/lib/showdown";
 import { CardView } from "./CardView";
 import clsx from "clsx";
+import type { ReactElement } from "react";
 
 const MODE_COPY: Record<GameMode, string> = {
   HANDS: "Hands",
@@ -77,7 +78,7 @@ export function ShowdownPanel({ result, mode }: { result: ShowdownResult; mode: 
           const activeWinner = activeWinnerIds.has(p.id);
           const wouldWinner = wouldWinnerIds.has(p.id);
           const displayName = formatName(p.name, p.isHero);
-          const chips: JSX.Element[] = [];
+          const chips: ReactElement[] = [];
           if (p.isHero) chips.push(<span key="hero" className="chip chip-hero">You</span>);
           if (activeWinner) chips.push(<span key="active" className="chip chip-win">Takes pot</span>);
           else if (wouldWinner) chips.push(<span key="would" className="chip chip-ghost">Best runout</span>);
