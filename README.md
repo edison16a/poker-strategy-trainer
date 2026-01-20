@@ -6,3 +6,5 @@ Want to get better at poker? **Poker Train** is a fast, user-friendly **poker pu
 - 📈 **Elo + Rank Progression**: climb from **Bronze → Champion**
 - 🧮 **Outs Trainer**: learn how to **calculate outs** + quick equity (Rule of 2 & 4)
 - 💾 **Saves locally**: progress stored in your browser
+
+<img width="985" height="669" alt="Screenshot 2026-01-19 at 9 23 12 PM" src="https://github.com/user-attachments/assets/b00885fb-4c0a-4ef4-b558-41c62a24a6d7" />
