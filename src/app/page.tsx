@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { CoachResponse, PlayerAction, PlayerProfile, TrainingState } from "@/lib/types";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { Card, CoachResponse, GameMode, OpponentAction, PlayerAction, PlayerProfile, RankName, TrainingState } from "@/lib/types";
 import { generateTrainingSpot } from "@/lib/scenario";
 import { loadProfile, saveProfile } from "@/lib/storage";
 import { rankFromElo } from "@/lib/ranks";
 import { clampElo, eloDeltaFromScore, randomGain } from "@/lib/elo";
-import type { RankName } from "@/lib/types";
+import { resolveShowdown, evaluateHand, type ShowdownResult, type HandEval } from "@/lib/showdown";
+import { computeOutsInfo } from "@/lib/outs";
 
 import { Header } from "@/components/Header";
 import { RankBadge } from "@/components/RankBadge";
@@ -18,10 +19,12 @@ import { CoachPanel } from "@/components/CoachPanel";
 import { OutsPanel } from "@/components/OutsPanel";
 import { StatsModal } from "@/components/StatsModal";
 import { RankModal } from "@/components/RankModal";
+import { ShowdownPanel } from "@/components/ShowdownPanel";
 
 export default function Page() {
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [state, setState] = useState<TrainingState | null>(null);
+  const [gameMode, setGameMode] = useState<GameMode>("HANDS");
 
   const [loadingCoach, setLoadingCoach] = useState(false);
   const [coach, setCoach] = useState<CoachResponse | null>(null);
@@ -34,32 +37,11 @@ export default function Page() {
   const [eloChange, setEloChange] = useState<number | null>(null);
   const [decisionTaken, setDecisionTaken] = useState(false);
   const [rankCongrats, setRankCongrats] = useState<string | null>(null);
+  const [showdown, setShowdown] = useState<ShowdownResult | null>(null);
 
   const [statsOpen, setStatsOpen] = useState(false);
-const [ranksOpen, setRanksOpen] = useState(false);
-
-  useEffect(() => {
-    const p = loadProfile();
-    setProfile(p);
-    setState(generateTrainingSpot());
-  }, []);
-
-  useEffect(() => {
-    if (profile) saveProfile(profile);
-  }, [profile]);
-
-  const posLabel = (pos: TrainingState["heroPos"] | TrainingState["villainPos"]) => {
-    switch (pos) {
-      case "BTN": return "Button";
-      case "CO": return "Cutoff";
-      case "HJ": return "Hijack";
-      case "UTG": return "Under the Gun";
-      case "BB": return "Big Blind";
-      case "SB": return "Small Blind";
-      case "MP": return "Middle Position";
-      default: return pos;
-    }
-  };
+  const [ranksOpen, setRanksOpen] = useState(false);
+  const revealTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const posTiming = (pos: TrainingState["heroPos"] | TrainingState["villainPos"]) => {
     switch (pos) {
@@ -79,10 +61,15 @@ const [ranksOpen, setRanksOpen] = useState(false);
   };
 
   const facingCall = state?.facing?.sizeBb ?? null;
-  const hasEmptyBoard = state ? state.board.turn === null || state.board.river === null : false;
+  const hasEmptyBoard = state ? state.street === "FLOP" || state.street === "TURN" : false;
 
-const penaltyFactorForRank = (rank: RankName | undefined) => {
-  switch (rank) {
+  function clearRevealTimers() {
+    revealTimers.current.forEach((t) => clearTimeout(t));
+    revealTimers.current = [];
+  }
+
+  const penaltyFactorForRank = (rank: RankName | undefined) => {
+    switch (rank) {
       case "Bronze": return 0.3;
       case "Silver": return 0.4;
       case "Gold": return 0.6;
@@ -94,8 +81,11 @@ const penaltyFactorForRank = (rank: RankName | undefined) => {
     }
   };
 
-  function nextHand() {
-    setState(generateTrainingSpot());
+  const resetForNewHand = useCallback(({ incrementHand = false, modeOverride }: { incrementHand?: boolean; modeOverride?: GameMode } = {}) => {
+    clearRevealTimers();
+    const nextMode = modeOverride ?? gameMode;
+    const nextState = generateTrainingSpot(nextMode);
+    setState(nextState);
     setCoach(null);
     setCoachError(null);
     setLoadingCoach(false);
@@ -105,15 +95,186 @@ const penaltyFactorForRank = (rank: RankName | undefined) => {
     setOutsReveal(false);
     setEloChange(null);
     setDecisionTaken(false);
+    setShowdown(null);
 
-    setProfile(p => {
-      if (!p) return p;
-      return {
-        ...p,
-        totalHands: p.totalHands + 1,
-        lastPlayedISO: new Date().toISOString(),
-      };
+    if (incrementHand) {
+      setProfile(p => {
+        if (!p) return p;
+        return {
+          ...p,
+          totalHands: p.totalHands + 1,
+          lastPlayedISO: new Date().toISOString(),
+        };
+      });
+    }
+  }, [gameMode]);
+
+  useEffect(() => {
+    const p = loadProfile();
+    setProfile(p);
+  }, []);
+
+  useEffect(() => {
+    resetForNewHand({ modeOverride: gameMode });
+  }, [gameMode, resetForNewHand]);
+
+  useEffect(() => {
+    if (profile) saveProfile(profile);
+  }, [profile]);
+
+  useEffect(() => {
+    return () => clearRevealTimers();
+  }, []);
+
+  function nextHand() {
+    resetForNewHand({ incrementHand: true });
+  }
+
+  const streetSequenceFrom = (street: TrainingState["street"]): TrainingState["street"][] => {
+    if (street === "PREFLOP") return ["PREFLOP", "FLOP", "TURN", "RIVER"];
+    if (street === "FLOP") return ["FLOP", "TURN", "RIVER"];
+    if (street === "TURN") return ["TURN", "RIVER"];
+    return ["RIVER"];
+  };
+
+  type BoardView = { flop: [Card, Card, Card] | null; turn: Card | null; river: Card | null };
+
+  const boardForStreet = (full: NonNullable<TrainingState["fullBoard"]>, street: TrainingState["street"]): BoardView => {
+    if (street === "PREFLOP") return { flop: null, turn: null, river: null };
+    if (street === "FLOP") return { flop: full.flop, turn: null, river: null };
+    if (street === "TURN") return { flop: full.flop, turn: full.turn, river: null };
+    return { flop: full.flop, turn: full.turn, river: full.river };
+  };
+
+  const boardCardsFromView = (view: BoardView): Card[] => {
+    const cards: Card[] = [];
+    if (view.flop) cards.push(...view.flop);
+    if (view.turn) cards.push(view.turn);
+    if (view.river) cards.push(view.river);
+    return cards;
+  };
+
+  const opponentActionsForStreet = (
+    opponentHands: NonNullable<TrainingState["opponentHands"]>,
+    boardView: BoardView,
+    street: TrainingState["street"],
+    potBb: number,
+  ) => {
+    const boardCards = boardCardsFromView(boardView);
+
+    type ActionOut = { name: "OppA" | "OppB" | "OppC"; action: OpponentAction; sizeBb?: number };
+    const evaluated: Array<{ idx: number; eval: HandEval }> = opponentHands.map((opp, idx) => ({
+      idx,
+      eval: evaluateHand([...opp.hand, ...boardCards]),
+    }));
+
+    const primary = evaluated.sort((a, b) => b.eval.scoreVector[0] - a.eval.scoreVector[0])[0]?.idx ?? 0;
+    const strength = evaluated.find(e => e.idx === primary)?.eval.scoreVector[0] ?? 0;
+    const betBias = street === "RIVER" ? 0.65 : street === "TURN" ? 0.55 : street === "FLOP" ? 0.5 : 0.4;
+    const shouldBet = Math.random() < (betBias + strength * 0.04);
+    const sizeMults = street === "PREFLOP" ? [1.5, 2.2, 3, 4] : street === "FLOP" ? [0.3, 0.5, 0.75] : [0.35, 0.6, 0.9, 1.2];
+    const sizeBb = shouldBet ? Math.max(1, Math.round(potBb * sizeMults[Math.floor(Math.random() * sizeMults.length)] * 100) / 100) : 0;
+    let facing: TrainingState["facing"] = null;
+    let newPot = potBb;
+
+    const opponentActions: ActionOut[] = opponentHands.map((opp, idx) => {
+      if (shouldBet && idx === primary) {
+        facing = { type: street === "PREFLOP" ? "RAISE" : "BET", sizeBb };
+        newPot = Math.round((newPot + sizeBb) * 100) / 100;
+        return { name: opp.name, action: street === "PREFLOP" ? "RAISE" : "BET", sizeBb };
+      }
+      if (shouldBet) {
+        const evalScore = evaluated.find(e => e.idx === idx)?.eval.scoreVector[0] ?? 0;
+        if (evalScore >= 2 && Math.random() > 0.2) {
+          newPot = Math.round((newPot + sizeBb) * 100) / 100;
+          return { name: opp.name, action: "CALL", sizeBb };
+        }
+        if (Math.random() < 0.2) return { name: opp.name, action: "FOLD" };
+        return { name: opp.name, action: "CALL", sizeBb };
+      }
+      return { name: opp.name, action: "CHECK" };
     });
+
+    return { actions: opponentActions, facing, potBb: newPot };
+  };
+
+  function advanceStreetAfterAction(currentState: TrainingState, heroAction: PlayerAction, raiseSizeBb?: number) {
+    if (!currentState.fullBoard || !currentState.opponentHands) return;
+
+    const seq = streetSequenceFrom(currentState.street);
+    const nextIdx = seq.indexOf(currentState.street) + 1;
+
+    const basePot = currentState.potBb;
+    const facingSize = currentState.facing?.sizeBb ?? 0;
+    let potAfterHero = basePot;
+    if (heroAction === "CALL" || heroAction === "RAISE") {
+      potAfterHero += facingSize;
+    }
+    if (heroAction === "RAISE") {
+      const extra = Math.max(0, (raiseSizeBb ?? 0) - facingSize);
+      potAfterHero += extra;
+    }
+
+    if (heroAction === "FOLD") {
+      setState(prev => prev ? {
+        ...prev,
+        board: currentState.fullBoard as TrainingState["board"],
+        street: "RIVER",
+        facing: null,
+      } : prev);
+      const result = resolveShowdown({
+        heroHand: currentState.heroHand,
+        opponents: currentState.opponentHands,
+        board: currentState.fullBoard,
+        heroFolded: true,
+        heroAction,
+      });
+      setShowdown(result);
+      setDecisionTaken(true);
+      return;
+    }
+
+    const isRiver = currentState.street === "RIVER" || nextIdx >= seq.length;
+    if (isRiver) {
+      setState(prev => prev ? {
+        ...prev,
+        board: currentState.fullBoard as TrainingState["board"],
+        street: "RIVER",
+        facing: null,
+      } : prev);
+      const result = resolveShowdown({
+        heroHand: currentState.heroHand,
+        opponents: currentState.opponentHands,
+        board: currentState.fullBoard,
+        heroFolded: false,
+        heroAction,
+      });
+      setShowdown(result);
+      setDecisionTaken(true);
+      return;
+    }
+
+    const nextStreet = seq[nextIdx];
+    const boardView = boardForStreet(currentState.fullBoard, nextStreet);
+    const { actions, facing, potBb } = opponentActionsForStreet(currentState.opponentHands, boardView, nextStreet, potAfterHero);
+    const outsInfo = computeOutsInfo(currentState.heroHand, boardCardsFromView(boardView), nextStreet) ?? undefined;
+
+    setState(prev => prev ? {
+      ...prev,
+      street: nextStreet,
+      board: boardView as TrainingState["board"],
+      opponentActions: actions as TrainingState["opponentActions"],
+      potBb,
+      facing,
+      outsInfo,
+    } : prev);
+
+    // fresh outs + decision for the new street
+    setOutsResult(null);
+    setOutsBonus(null);
+    setOutsAttempts(0);
+    setOutsReveal(false);
+    setDecisionTaken(false);
   }
 
   function handleOutsResult(answer: number, kind: "perfect" | "close" | "wrong") {
@@ -167,17 +328,21 @@ const penaltyFactorForRank = (rank: RankName | undefined) => {
 
   async function judge(heroAction: PlayerAction, raiseSizeBb?: number) {
     if (!state || decisionTaken) return;
+    const currentState = state;
     setDecisionTaken(true);
     setCoach(null);
     setCoachError(null);
     setLoadingCoach(true);
+    if (gameMode !== "HANDS") {
+      advanceStreetAfterAction(currentState, heroAction, raiseSizeBb);
+    }
 
     try {
       const res = await fetch("/api/coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          state: state!,
+          state: currentState,
           heroAction,
           raiseSizeBb: raiseSizeBb ?? null,
           outsAnswer: outsResult?.answer ?? null,
@@ -228,8 +393,9 @@ const penaltyFactorForRank = (rank: RankName | undefined) => {
       setEloChange(adjustedDelta !== 0 ? adjustedDelta : null);
 
       setCoach(data);
-    } catch (e: any) {
-      setCoachError(e?.message ?? "Unknown error");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Unknown error";
+      setCoachError(message);
     } finally {
       setLoadingCoach(false);
     }
@@ -248,6 +414,9 @@ const penaltyFactorForRank = (rank: RankName | undefined) => {
         <Header
           onShowStats={() => setStatsOpen(true)}
           onNextHand={nextHand}
+          nextLabel={gameMode === "GAME" ? "Next game" : "Next hand"}
+          gameMode={gameMode}
+          onChangeMode={(mode) => setGameMode(mode)}
         />
 
         <div className="grid-main">
@@ -337,7 +506,7 @@ const penaltyFactorForRank = (rank: RankName | undefined) => {
                 </div>
 
                 <ActionBar
-                  disabled={loadingCoach || decisionTaken}
+                  disabled={decisionTaken}
                   callAmount={facingCall}
                   onAction={(a, raise) => {
                     judge(a, raise);
@@ -345,6 +514,10 @@ const penaltyFactorForRank = (rank: RankName | undefined) => {
                 />
               </div>
             </div>
+
+            {showdown && (
+              <ShowdownPanel result={showdown} mode={gameMode} />
+            )}
           </div>
         </div>
       </div>

@@ -60,7 +60,7 @@ export function OutsPanel({
     setVal("");
     setShowHelp(false);
     setShowCallChart(false);
-  }, [state]);
+  }, [state.fullBoard]);
 
   if (!show) return null;
 

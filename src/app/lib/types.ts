@@ -7,6 +7,7 @@ export type Card = { r: Rank; s: Suit };
 export type Street = "PREFLOP" | "FLOP" | "TURN" | "RIVER";
 
 export type PlayerAction = "FOLD" | "CALL" | "RAISE";
+export type GameMode = "HANDS" | "HANDS_PLUS" | "GAME";
 
 export type OpponentAction = "FOLD" | "CALL" | "RAISE" | "CHECK" | "BET";
 
@@ -15,7 +16,7 @@ export type RankName =
 
 export type CoachResponse = {
   score: number; // 0-100
-  verdict: "good" | "neutral" | "bad";
+  verdict: "perfect" | "great" | "good" | "neutral" | "not-ideal" | "bad";
   bestAction: "fold" | "call" | "raise";
   bestRaiseSizeBb: number | null;
   reasons: string[];
@@ -39,6 +40,15 @@ export type TrainingState = {
   effectiveStackBb: number; // default 100
   potBb: number;
   facing: { type: "BET" | "RAISE"; sizeBb: number } | null;
+  fullBoard?: {
+    flop: [Card, Card, Card];
+    turn: Card;
+    river: Card;
+  };
+  opponentHands?: Array<{
+    name: "OppA" | "OppB" | "OppC";
+    hand: [Card, Card];
+  }>;
 
   // Opponent actions this street (3 opponents)
   opponentActions: Array<{

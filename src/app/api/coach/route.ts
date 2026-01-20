@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import type { CoachResponse, TrainingState, PlayerAction } from "@/lib/types";
+import type { CoachResponse, TrainingState, PlayerAction, Card } from "@/lib/types";
 import { cardToString, rankValue } from "@/lib/cards";
+import { evaluateHand, type HandEval } from "@/lib/showdown";
 
 type ReqBody = {
   state: TrainingState;
@@ -19,67 +20,90 @@ function potOddsPct(pot: number, facing: number | null) {
   return (facing / (pot + facing)) * 100;
 }
 
-function handTextureStrength(state: TrainingState): { strength: number; descriptors: string[] } {
+function boardRanks(state: TrainingState) {
   const cards = [
+    ...(state.board.flop ?? []),
+    state.board.turn,
+    state.board.river,
+  ].filter(Boolean) as { r: any }[];
+  return cards.map(c => rankValue(c.r));
+}
+
+function equityFromMadeHand(handEval: HandEval, state: TrainingState): { equity: number; note: string; detail?: string } {
+  const base: Record<HandEval["category"], number> = {
+    HIGH_CARD: 25,
+    ONE_PAIR: 50,
+    TWO_PAIR: 80,
+    THREE_OF_A_KIND: 88,
+    STRAIGHT: 90,
+    FLUSH: 94,
+    FULL_HOUSE: 97,
+    FOUR_OF_A_KIND: 99,
+    STRAIGHT_FLUSH: 100,
+  };
+
+  let equity = base[handEval.category] ?? 50;
+  const ranks = boardRanks(state);
+  const boardHigh = Math.max(...ranks, 0);
+  const boardSecond = ranks.sort((a, b) => b - a)[1] ?? boardHigh;
+
+  let detail = handEval.label;
+
+  if (handEval.category === "ONE_PAIR") {
+    const pairRank = handEval.scoreVector[1] ?? 0;
+    if (pairRank >= boardHigh) {
+      equity += 12; // top pair / overpair
+      detail = "Top pair/overpair";
+    } else if (pairRank >= boardHigh - 1) {
+      equity += 6;
+      detail = "Second pair";
+    } else if (pairRank >= boardSecond) {
+      equity -= 4;
+      detail = "Middle pair (vulnerable)";
+    } else {
+      equity -= 10;
+      detail = "Low pair—thin value";
+    }
+    equity = Math.min(86, equity);
+  } else if (handEval.category === "TWO_PAIR") {
+    const topPair = handEval.scoreVector[1] ?? 0;
+    if (topPair >= boardHigh) equity += 6;
+    detail = topPair >= 12 ? "Top two with high kickers" : "Two pair";
+    equity = Math.min(94, equity);
+  } else if (handEval.category === "THREE_OF_A_KIND") {
+    equity = Math.max(equity, 90);
+  }
+
+  // Earlier streets carry some volatility
+  if (state.street === "FLOP") equity = Math.max(equity - 6, 0);
+  if (state.street === "TURN") equity = Math.max(equity - 3, 0);
+
+  return { equity, note: handEval.label, detail };
+}
+
+function equityEstimate(state: TrainingState): { equity: number; notes: string[] } {
+  const heroEval = evaluateHand([
     ...state.heroHand,
     ...(state.board.flop ?? []),
     state.board.turn,
     state.board.river,
-  ].filter(Boolean) as { r: any; s: any }[];
+  ].filter(Boolean) as Card[]);
 
-  const counts: Record<string, number> = {};
-  for (const c of cards) counts[c.r] = (counts[c.r] ?? 0) + 1;
-  const maxCount = Math.max(...Object.values(counts), 0);
+  const made = equityFromMadeHand(heroEval, state);
+  const notes: string[] = [`Made hand: ${made.note}${made.detail ? ` (${made.detail})` : ""}`];
+  const boardText = (state.board.flop ?? []).map(cardToString);
+  if (state.board.turn) boardText.push(cardToString(state.board.turn));
+  if (state.board.river) boardText.push(cardToString(state.board.river));
+  const boardString = boardText.join(" ");
+  notes.push(boardString ? `Board texture: ${boardString}` : "No board cards yet.");
 
-  let strength = 35;
-  const descriptors: string[] = [];
-  if (maxCount >= 4) {
-    strength = 96;
-    descriptors.push("Made hand: quads/full house threat");
-  } else if (maxCount === 3) {
-    strength = 84;
-    descriptors.push("Made hand: trips/set");
-  } else if (maxCount === 2) {
-    strength = 74;
-    descriptors.push("Made hand: one pair/two pair potential (pocket pairs get a bonus).");
-    // Pocket pair bonus for overpairs to the board
-    const boardRanks = (state.board.flop ?? []).map(c => rankValue(c.r));
-    const pocketPair = state.heroHand[0].r === state.heroHand[1].r;
-    if (pocketPair) {
-      const pairRank = rankValue(state.heroHand[0].r);
-      const boardHigh = Math.max(...(boardRanks.length ? boardRanks : [0]));
-      if (pairRank > boardHigh) {
-        strength += 12; // overpair strength bump
-        descriptors.push("Overpair to the board adds showdown value.");
-      }
-    }
-  } else {
-    descriptors.push("High card / draw-dependent");
-  }
-
-  const high = Math.max(...state.heroHand.map(c => rankValue(c.r)));
-  strength += Math.max(0, (high - 10) * 1.8);
-
-  // Board pressure: paired and suited boards reduce raw strength a bit.
-  const boardCounts: Record<string, number> = {};
-  for (const c of (state.board.flop ?? [])) boardCounts[c.r] = (boardCounts[c.r] ?? 0) + 1;
-  if (Object.values(boardCounts).some(c => c >= 2)) {
-    strength -= 5;
-    descriptors.push("Paired board increases variance");
-  }
-
-  return { strength: Math.min(98, Math.max(20, strength)), descriptors };
-}
-
-function equityEstimate(state: TrainingState): { equity: number; notes: string[] } {
+  let equity = made.equity;
   if (state.outsInfo) {
-    return {
-      equity: state.outsInfo.equityApproxPct,
-      notes: [`Outs: ${state.outsInfo.correctOuts} (${state.outsInfo.drawLabel}) ≈ ${state.outsInfo.equityApproxPct}% equity.`],
-    };
+    notes.push(`Draw outs: ${state.outsInfo.correctOuts} (${state.outsInfo.drawLabel}) ≈ ${state.outsInfo.equityApproxPct}%.`);
+    equity = Math.max(equity, state.outsInfo.equityApproxPct);
   }
-  const { strength, descriptors } = handTextureStrength(state);
-  return { equity: strength, notes: descriptors };
+
+  return { equity, notes };
 }
 
 function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseSizeBb?: number | null): CoachResponse {
@@ -87,6 +111,12 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
   const equityInfo = equityEstimate(state);
   const equity = equityInfo.equity;
   const edge = equity - potOdds;
+  const heroEval = evaluateHand([
+    ...state.heroHand,
+    ...(state.board.flop ?? []),
+    state.board.turn,
+    state.board.river,
+  ].filter(Boolean) as Card[]);
 
   const posAggression =
     state.heroPos === "BTN" || state.heroPos === "CO" ? 4 :
@@ -118,13 +148,62 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
     }
   }
 
+  const heroCategoryBoost: Record<HandEval["category"], number> = {
+    STRAIGHT_FLUSH: 24,
+    FOUR_OF_A_KIND: 22,
+    FULL_HOUSE: 20,
+    FLUSH: 16,
+    STRAIGHT: 14,
+    THREE_OF_A_KIND: 12,
+    TWO_PAIR: 10,
+    ONE_PAIR: 4,
+    HIGH_CARD: 0,
+  };
+  let madeBoost = heroCategoryBoost[heroEval.category] ?? 0;
+  if (heroEval.category === "TWO_PAIR") {
+    const hi = heroEval.scoreVector[1] ?? 0;
+    const lo = heroEval.scoreVector[2] ?? 0;
+    if (hi >= 13 && lo >= 11) madeBoost += 6; // top two with big cards
+  }
+  if (heroEval.category === "ONE_PAIR") {
+    const pairRank = heroEval.scoreVector[1] ?? 0;
+    const boardHigh = Math.max(...boardRanks(state), 0);
+    if (pairRank >= boardHigh) madeBoost += 4; // top pair/overpair
+    else if (pairRank >= boardHigh - 1) madeBoost += 2;
+  }
+
+  const texturePenalty = (() => {
+    const board = boardRanks(state);
+    const suits = [
+      ...(state.board.flop ?? []),
+      state.board.turn,
+      state.board.river,
+    ].filter(Boolean).map(c => c.s);
+    const suitCounts: Record<string, number> = {};
+    suits.forEach(s => { suitCounts[s] = (suitCounts[s] ?? 0) + 1; });
+    const twoTone = Object.values(suitCounts).some(c => c >= 2);
+    const connected = (() => {
+      const sorted = Array.from(new Set(board)).sort((a, b) => a - b);
+      for (let i = 1; i < sorted.length; i++) {
+        if (sorted[i] - sorted[i - 1] <= 2) return true;
+      }
+      return false;
+    })();
+    let penalty = 0;
+    if (twoTone) penalty += 3;
+    if (connected) penalty += 3;
+    if (state.street === "FLOP") penalty += 2; // more future cards to dodge
+    if (state.street === "TURN") penalty += 1;
+    return penalty;
+  })();
+
   const alignment =
     (heroAction === "RAISE" && bestAction === "raise") || (heroAction === "CALL" && bestAction === "call") || (heroAction === "FOLD" && bestAction === "fold")
       ? 14
       : heroAction === "RAISE" && bestAction === "call"
-      ? -8
-      : heroAction === "CALL" && bestAction === "raise"
       ? -6
+      : heroAction === "CALL" && bestAction === "raise"
+      ? -5
       : -14;
 
   // Pressure/disciplined adjustments
@@ -135,10 +214,15 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
     if (oppAggression >= 2 && equity < 55) discipline -= 4;
   }
 
-  const scoreBase = 62 + edge * 0.5 + posAggression + discipline;
+  const scoreBase = 54 + edge * 0.45 + posAggression + discipline + madeBoost * 0.5 - texturePenalty;
   const score = clampScore(scoreBase + alignment + 10); // bias upward so best decisions land 80+
   const verdict: CoachResponse["verdict"] =
-    score >= 80 ? "good" : score >= 55 ? "neutral" : "bad";
+    score >= 95 ? "perfect"
+    : score >= 80 ? "great"
+    : score >= 60 ? "good"
+    : score >= 50 ? "neutral"
+    : score >= 30 ? "not-ideal"
+    : "bad";
 
   const reasons: string[] = [];
   const heroStr = state.heroHand.map(cardToString).join(" ");
@@ -148,7 +232,12 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
     state.board.river ? cardToString(state.board.river) : "",
   ].filter(Boolean).join(" ");
 
-  reasons.push(`Hand: ${heroStr}${boardStr ? ` on ${boardStr}` : ""}. Pot odds need ~${potOdds.toFixed(1)}% equity; estimated strength is ~${equity.toFixed(1)}%.`);
+  const futureCards =
+    state.street === "PREFLOP" ? "3 streets to come" :
+    state.street === "FLOP" ? "turn + river to come" :
+    state.street === "TURN" ? "river to come" : "showdown card already dealt";
+
+  reasons.push(`Hand: ${heroStr}${boardStr ? ` on ${boardStr}` : ""}. ${heroEval.label} (${futureCards}). Pot odds need ~${potOdds.toFixed(1)}% equity; estimated strength is ~${equity.toFixed(1)}%.`);
   reasons.push(...equityInfo.notes);
   if (state.facing) {
     reasons.push(`Facing ${state.facing.type.toLowerCase()} of ~${facingPctPot.toFixed(1)}% pot; opponents aggression: ${oppAggression} bets/raises.`);
@@ -158,9 +247,9 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
   }
   reasons.push(
     bestAction === "raise"
-      ? `Raising with ${heroStr} vs ${boardStr || "no board"} leverages fold equity when ahead and denies equity to worse draws.`
+      ? `Raising with ${heroStr} vs ${boardStr || "no board"} leverages fold equity and pushes value from worse hands; strong made hand supports aggression.`
       : bestAction === "call"
-      ? `Calling keeps dominated hands in; ${heroStr}${boardStr ? ` still has ${equity.toFixed(1)}% versus the price` : ""}.`
+      ? `Calling keeps dominated hands in; ${heroStr}${boardStr ? ` retains ~${equity.toFixed(1)}% versus the price` : ""}.`
       : `Folding is best: ${heroStr} lacks equity versus the price and aggression shown.`
   );
   const trimmedReasons = reasons.slice(0, 4);
