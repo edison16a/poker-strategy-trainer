@@ -8,6 +8,7 @@ export type Street = "PREFLOP" | "FLOP" | "TURN" | "RIVER";
 
 export type PlayerAction = "FOLD" | "CALL" | "RAISE";
 export type GameMode = "HANDS" | "HANDS_PLUS" | "GAME";
+export type HandsPreference = "ANY" | "PREFLOP" | "OUTS" | "FINAL";
 
 export type OpponentAction = "FOLD" | "CALL" | "RAISE" | "CHECK" | "BET";
 
@@ -72,6 +73,7 @@ export type PlayerProfile = {
   totalDecisions: number;
   correctOutsCount: number;
   lastPlayedISO: string;
+  preferredHands: HandsPreference;
 
   // last session (nice UX)
   lastCoachScore?: number;

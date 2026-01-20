@@ -1,4 +1,4 @@
-import type { Card, Street, TrainingState, OpponentAction, GameMode } from "./types";
+import type { Card, Street, TrainingState, OpponentAction, GameMode, HandsPreference } from "./types";
 import { makeDeck, shuffle } from "./cards";
 import { computeOutsInfo } from "./outs";
 
@@ -14,8 +14,18 @@ function randomPositions() {
   return { heroPos, villainPos };
 }
 
-function streetOrder(mode: GameMode): Street[] {
+function streetsForPreference(pref: HandsPreference): Street[] {
+  switch (pref) {
+    case "PREFLOP": return ["PREFLOP"];
+    case "OUTS": return ["FLOP", "TURN"]; // 2 or 1 cards left
+    case "FINAL": return ["RIVER"];       // no cards left
+    default: return ["PREFLOP", "FLOP", "TURN", "RIVER"];
+  }
+}
+
+function streetOrder(mode: GameMode, handsPref: HandsPreference): Street[] {
   if (mode === "GAME") return ["PREFLOP"];
+  if (mode === "HANDS") return streetsForPreference(handsPref);
   return ["PREFLOP", "FLOP", "TURN", "RIVER"];
 }
 
@@ -53,7 +63,7 @@ function pickBetSizeBb(potBb: number, street: Street) {
   return Math.max(1, Math.round(raw * 100) / 100);
 }
 
-export function generateTrainingSpot(mode: GameMode = "HANDS"): TrainingState {
+export function generateTrainingSpot(mode: GameMode = "HANDS", handsPref: HandsPreference = "ANY"): TrainingState {
   const deck = shuffle(makeDeck());
 
   const heroHand: [Card, Card] = [deck.pop()!, deck.pop()!];
@@ -70,7 +80,7 @@ export function generateTrainingSpot(mode: GameMode = "HANDS"): TrainingState {
   const river: Card = deck.pop()!;
 
   const boardAll = { flop, turn, river };
-  const street = pick(streetOrder(mode));
+  const street = pick(streetOrder(mode, handsPref));
   const boardUpTo = getBoardUpToStreet(boardAll, street);
 
   const { heroPos, villainPos } = randomPositions();

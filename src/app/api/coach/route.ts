@@ -10,6 +10,8 @@ type ReqBody = {
   outsAnswer?: number | null;
 };
 
+type PreflopTier = "premium" | "strong" | "speculative" | "trash";
+
 function clampScore(n: number) {
   if (!Number.isFinite(n)) return 60;
   return Math.max(0, Math.min(100, Math.round(n)));
@@ -27,6 +29,42 @@ function boardRanks(state: TrainingState) {
     state.board.river,
   ].filter(Boolean) as { r: any }[];
   return cards.map(c => rankValue(c.r));
+}
+
+function preflopHandProfile(hand: TrainingState["heroHand"]): { tier: PreflopTier; strength: number; equityHint: number; label: string } {
+  const [c1, c2] = hand;
+  const v1 = rankValue(c1.r);
+  const v2 = rankValue(c2.r);
+  const hi = Math.max(v1, v2);
+  const lo = Math.min(v1, v2);
+  const suited = c1.s === c2.s;
+  const pair = v1 === v2;
+  const gap = Math.abs(v1 - v2);
+  const handStr = hand.map(cardToString).join(" ");
+
+  if (pair) {
+    if (hi >= 13) return { tier: "premium", strength: 95, equityHint: 82, label: `Premium pair (${handStr})` };
+    if (hi >= 10) return { tier: "strong", strength: 86, equityHint: 76, label: `High pair (${handStr})` };
+    if (hi >= 7) return { tier: "strong", strength: 78, equityHint: 70, label: `Medium pair (${handStr})` };
+    return { tier: "speculative", strength: 68, equityHint: 62, label: `Small pair (${handStr})` };
+  }
+
+  const isBroadway = hi >= 13 && lo >= 10;
+  const hasAce = hi === 14;
+  const suitedConnector = suited && gap === 1;
+  const suitedOneGap = suited && gap === 2;
+
+  if (isBroadway && suited) return { tier: "premium", strength: 88, equityHint: 74, label: `Suited broadway (${handStr})` };
+  if (isBroadway) return { tier: "strong", strength: 80, equityHint: 68, label: `Broadway combo (${handStr})` };
+  if (hasAce && suited && lo >= 9) return { tier: "strong", strength: 78, equityHint: 68, label: `Suited ace (${handStr})` };
+  if (hasAce && suited && lo >= 5) return { tier: "speculative", strength: 70, equityHint: 60, label: `Wheel/weak suited ace (${handStr})` };
+  if (hasAce && lo >= 10) return { tier: "strong", strength: 76, equityHint: 66, label: `Big ace (${handStr})` };
+  if (suitedConnector && hi >= 9) return { tier: "strong", strength: 74, equityHint: 64, label: `Suited connectors (${handStr})` };
+  if ((suitedConnector || suitedOneGap) && hi >= 8) return { tier: "speculative", strength: 66, equityHint: 58, label: `Suited connector/gapper (${handStr})` };
+  if (suited && lo >= 7 && gap <= 3) return { tier: "speculative", strength: 62, equityHint: 56, label: `Suited hand (${handStr})` };
+  if (hi >= 12 && lo >= 8) return { tier: "speculative", strength: 60, equityHint: 56, label: `Playable high cards (${handStr})` };
+
+  return { tier: "trash", strength: 38, equityHint: 36, label: `Trash/ragged hand (${handStr})` };
 }
 
 function equityFromMadeHand(handEval: HandEval, state: TrainingState): { equity: number; note: string; detail?: string } {
@@ -107,9 +145,16 @@ function equityEstimate(state: TrainingState): { equity: number; notes: string[]
 }
 
 function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseSizeBb?: number | null): CoachResponse {
+  const preflopProfile = state.street === "PREFLOP" ? preflopHandProfile(state.heroHand) : null;
   const potOdds = potOddsPct(state.potBb, state.facing?.sizeBb ?? null);
   const equityInfo = equityEstimate(state);
-  const equity = equityInfo.equity;
+  const equityNotes = preflopProfile
+    ? [`Preflop strength: ${preflopProfile.label} (≈${preflopProfile.equityHint}% vs random).`, ...equityInfo.notes]
+    : equityInfo.notes;
+  let equity = equityInfo.equity;
+  if (preflopProfile) {
+    equity = Math.max(equity, preflopProfile.equityHint);
+  }
   const edge = equity - potOdds;
   const heroEval = evaluateHand([
     ...state.heroHand,
@@ -145,6 +190,31 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
       bestRaiseSizeBb = Math.max(3, Math.round(state.potBb * 0.55));
     } else {
       bestAction = "call";
+    }
+  }
+
+  if (preflopProfile) {
+    const facingBet = Boolean(state.facing);
+    const strength = preflopProfile.strength;
+    if (strength >= 80) {
+      bestAction = "raise";
+      bestRaiseSizeBb = facingBet && state.facing
+        ? Math.max(state.facing.sizeBb * 2.3, 4)
+        : Math.max(3, Math.round(state.potBb * 0.65));
+    } else if (strength >= 70) {
+      if (facingBet && state.facing) {
+        bestAction = edge > -8 ? "raise" : "call";
+        bestRaiseSizeBb = bestAction === "raise" ? Math.max(state.facing.sizeBb * 2.1, 3) : null;
+      } else {
+        bestAction = "raise";
+        bestRaiseSizeBb = Math.max(3, Math.round(state.potBb * 0.55));
+      }
+    } else if (strength >= 58) {
+      bestAction = "call";
+      bestRaiseSizeBb = null;
+    } else {
+      bestAction = "fold";
+      bestRaiseSizeBb = null;
     }
   }
 
@@ -225,12 +295,34 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
     if (oppAggression >= 2 && equity < 55) discipline -= 4;
   }
 
+  const preflopBonus = preflopProfile ? (() => {
+    if (heroAction === "FOLD") {
+      if (preflopProfile.tier === "trash") return 22;
+      if (preflopProfile.tier === "speculative" && state.facing) return 12;
+    }
+    if (heroAction === "CALL") {
+      if (preflopProfile.tier === "speculative") return 8;
+      if (preflopProfile.tier === "strong" && state.facing) return 10;
+    }
+    if (heroAction === "RAISE") {
+      if (preflopProfile.tier === "premium") return 20;
+      if (preflopProfile.tier === "strong") return 12;
+    }
+    return 0;
+  })() : 0;
+
   const scoreBase = 52 + edge * 0.35 + posAggression + discipline + madeBoost * 0.45 - texturePenalty - vulnerabilityPenalty;
-  let score = clampScore(scoreBase + alignment + 10); // bias upward so best decisions land 80+
+  let score = clampScore(scoreBase + alignment + 10 + preflopBonus); // bias upward so best decisions land 80+
 
   // If user matched the best action, ensure they are not graded below 50 (correct line even if thin/losing).
   const matchedBest = (heroAction === "RAISE" && bestAction === "raise") || (heroAction === "CALL" && bestAction === "call") || (heroAction === "FOLD" && bestAction === "fold");
   if (matchedBest) score = Math.max(score, 50);
+  if (preflopProfile) {
+    if (heroAction === "FOLD" && preflopProfile.tier === "trash") score = Math.max(score, 72);
+    if (heroAction === "RAISE" && (preflopProfile.tier === "strong" || preflopProfile.tier === "premium")) {
+      score = Math.max(score, preflopProfile.tier === "premium" ? 82 : 72);
+    }
+  }
   const verdict: CoachResponse["verdict"] =
     score >= 95 ? "perfect"
     : score >= 80 ? "great"
@@ -253,7 +345,10 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
     state.street === "TURN" ? "river to come" : "showdown card already dealt";
 
   reasons.push(`Hand: ${heroStr}${boardStr ? ` on ${boardStr}` : ""}. ${heroEval.label} (${futureCards}). Pot odds need ~${potOdds.toFixed(1)}% equity; estimated strength is ~${equity.toFixed(1)}%.`);
-  reasons.push(...equityInfo.notes);
+  reasons.push(...equityNotes);
+  if (preflopProfile) {
+    reasons.push(`Preflop plan: ${preflopProfile.label}. Folding rags keeps Elo intact; aggression is rewarded when starting hand strength warrants it.`);
+  }
   if (state.facing) {
     reasons.push(`Facing ${state.facing.type.toLowerCase()} of ~${facingPctPot.toFixed(1)}% pot; opponents aggression: ${oppAggression} bets/raises.`);
     const requiredEquity = potOdds;
@@ -276,11 +371,14 @@ function evaluateDecision(state: TrainingState, heroAction: PlayerAction, raiseS
   );
   const trimmedReasons = reasons.slice(0, 6);
 
-  const conceptTags: string[] = [
+  let conceptTags: string[] = [
     edge >= 0 ? "pot-odds+" : "pot-odds-",
     state.outsInfo ? "draws" : "made-hand",
     bestAction === "raise" ? "value/semibluff" : bestAction === "fold" ? "discipline" : "realize-equity",
   ];
+  if (preflopProfile) {
+    conceptTags = [...conceptTags, preflopProfile.tier === "trash" ? "preflop-discipline" : "preflop-starting-hand"];
+  }
 
   return {
     score,

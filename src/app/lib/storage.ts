@@ -1,7 +1,12 @@
-import type { PlayerProfile } from "./types";
+import type { HandsPreference, PlayerProfile } from "./types";
 import { rankFromElo } from "./ranks";
 
 const KEY = "poker-train.profile.v1";
+const HAND_PREF_OPTIONS: HandsPreference[] = ["ANY", "PREFLOP", "OUTS", "FINAL"];
+
+function normalizePreferredHands(value: unknown): HandsPreference {
+  return HAND_PREF_OPTIONS.includes(value as HandsPreference) ? value as HandsPreference : "ANY";
+}
 
 export function defaultProfile(): PlayerProfile {
   const elo = 0;
@@ -12,6 +17,7 @@ export function defaultProfile(): PlayerProfile {
     totalDecisions: 0,
     correctOutsCount: 0,
     lastPlayedISO: new Date().toISOString(),
+    preferredHands: "ANY",
   };
 }
 
@@ -24,6 +30,7 @@ export function loadProfile(): PlayerProfile {
     // harden
     parsed.elo = Math.max(0, parsed.elo ?? 0);
     parsed.rank = rankFromElo(parsed.elo);
+    parsed.preferredHands = normalizePreferredHands(parsed.preferredHands);
     return parsed;
   } catch {
     return defaultProfile();

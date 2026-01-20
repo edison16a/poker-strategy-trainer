@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Card, CoachResponse, GameMode, OpponentAction, PlayerAction, PlayerProfile, RankName, TrainingState } from "@/lib/types";
+import type { Card, CoachResponse, GameMode, HandsPreference, OpponentAction, PlayerAction, PlayerProfile, RankName, TrainingState } from "@/lib/types";
 import { generateTrainingSpot } from "@/lib/scenario";
 import { loadProfile, saveProfile } from "@/lib/storage";
 import { rankFromElo } from "@/lib/ranks";
@@ -45,6 +45,8 @@ export default function Page() {
   const [runoutOpen, setRunoutOpen] = useState(false);
   const [runoutEloNote, setRunoutEloNote] = useState<string | null>(null);
   const revealTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const handsPrefRef = useRef<HandsPreference>("ANY");
+  const handsPreference = profile?.preferredHands ?? "ANY";
 
   const posTiming = (pos: TrainingState["heroPos"] | TrainingState["villainPos"]) => {
     switch (pos) {
@@ -84,10 +86,19 @@ export default function Page() {
     }
   };
 
-  const resetForNewHand = useCallback(({ incrementHand = false, modeOverride }: { incrementHand?: boolean; modeOverride?: GameMode } = {}) => {
+  const resetForNewHand = useCallback(({
+    incrementHand = false,
+    modeOverride,
+    handsPrefOverride,
+  }: {
+    incrementHand?: boolean;
+    modeOverride?: GameMode;
+    handsPrefOverride?: HandsPreference;
+  } = {}) => {
     clearRevealTimers();
     const nextMode = modeOverride ?? gameMode;
-    const nextState = generateTrainingSpot(nextMode);
+    const pref = handsPrefOverride ?? handsPrefRef.current;
+    const nextState = generateTrainingSpot(nextMode, pref);
     setState(nextState);
     setCoach(null);
     setCoachError(null);
@@ -121,8 +132,18 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
+    handsPrefRef.current = handsPreference;
+  }, [handsPreference]);
+
+  useEffect(() => {
+    if (gameMode === "HANDS") return;
     resetForNewHand({ modeOverride: gameMode });
   }, [gameMode, resetForNewHand]);
+
+  useEffect(() => {
+    if (gameMode !== "HANDS") return;
+    resetForNewHand({ modeOverride: "HANDS", handsPrefOverride: handsPreference });
+  }, [gameMode, handsPreference, resetForNewHand]);
 
   useEffect(() => {
     if (profile) saveProfile(profile);
@@ -131,6 +152,18 @@ export default function Page() {
   useEffect(() => {
     return () => clearRevealTimers();
   }, []);
+
+  function handlePreferredHandsChange(pref: HandsPreference) {
+    if (handsPrefRef.current === pref) return;
+    handsPrefRef.current = pref;
+    setProfile(p => {
+      if (!p || p.preferredHands === pref) return p;
+      return { ...p, preferredHands: pref };
+    });
+    if (gameMode === "HANDS") {
+      resetForNewHand({ modeOverride: "HANDS", handsPrefOverride: pref });
+    }
+  }
 
   function nextHand() {
     resetForNewHand({ incrementHand: true });
@@ -707,6 +740,7 @@ export default function Page() {
           });
           setEloChange(null);
         }}
+        onChangeHandsPreference={handlePreferredHandsChange}
       />
       <RankModal open={ranksOpen} onClose={() => setRanksOpen(false)} currentRank={profile.rank} />
       {rankCongrats && (

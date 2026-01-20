@@ -1,23 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import type { PlayerProfile } from "@/lib/types";
+import clsx from "clsx";
+import type { HandsPreference, PlayerProfile } from "@/lib/types";
+
+const HAND_PREF_OPTIONS: Array<{ value: HandsPreference; label: string; desc: string }> = [
+  { value: "ANY", label: "Mixed", desc: "Hands mode uses a mix of preflop, flop, turn, and river spots." },
+  { value: "PREFLOP", label: "Pre-Flop", desc: "Hands only give preflop training spots." },
+  { value: "OUTS", label: "Outs", desc: "Hands always start with 1-2 cards left (flop or turn) for outs practice." },
+  { value: "FINAL", label: "Final", desc: "Hands always start with 0 cards left (river-only decisions)." },
+];
 
 export function StatsModal({
   open,
   onClose,
   profile,
   onCheatSetElo,
+  onChangeHandsPreference,
 }: {
   open: boolean;
   onClose: () => void;
   profile: PlayerProfile;
   onCheatSetElo: (elo: number) => void;
+  onChangeHandsPreference: (pref: HandsPreference) => void;
 }) {
   const [cheatOpen, setCheatOpen] = useState(false);
   const [cheatVal, setCheatVal] = useState("");
 
   if (!open) return null;
+
+  const prefOption = HAND_PREF_OPTIONS.find(opt => opt.value === profile.preferredHands) ?? HAND_PREF_OPTIONS[0];
 
   return (
     <div className="modal-backdrop">
@@ -47,6 +59,32 @@ export function StatsModal({
             <div className="label">Last coach score</div>
             <div className="stat-number">{profile.lastCoachScore ?? "—"}</div>
           </div>
+        </div>
+
+        <div className="preferred-hands">
+          <div className="row-between">
+            <div className="label-strong">Preferred Hands</div>
+            <div className="meta">Affects Hands mode only</div>
+          </div>
+          <div className="mode-toggle-buttons pref-buttons" role="group" aria-label="Preferred hand types">
+            {HAND_PREF_OPTIONS.map((opt, idx, arr) => (
+              <button
+                key={opt.value}
+                className={clsx(
+                  "mode-btn",
+                  "pref-button",
+                  idx === 0 && "first",
+                  idx === arr.length - 1 && "last",
+                  opt.value === profile.preferredHands && "active",
+                )}
+                onClick={() => onChangeHandsPreference(opt.value)}
+                type="button"
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div className="meta">{prefOption.desc}</div>
         </div>
 
         <div className="meta stats-footer">
