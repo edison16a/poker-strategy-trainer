@@ -255,6 +255,49 @@ input {
   margin-top: 10px;
 }
 
+.opp-showdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.opp-showdown-cards {
+  display: flex;
+  gap: 6px;
+}
+
+.opp-winner {
+  border-color: rgba(255, 215, 0, 0.6);
+  background: rgba(255, 215, 0, 0.25);
+  color: #1f1a0f;
+}
+
+.action-box.opp-winner {
+  background: rgba(255, 215, 0, 0.25);
+  border-color: rgba(255, 215, 0, 0.6);
+  color: #1f1a0f;
+}
+
+.action-box.self.opp-winner {
+  background: rgba(255, 215, 0, 0.25);
+  border-color: rgba(255, 215, 0, 0.6);
+  color: #1f1a0f;
+}
+
+.turn-active {
+  border-color: rgba(34, 211, 238, 0.9);
+  box-shadow: 0 10px 28px rgba(34, 211, 238, 0.38);
+}
+
+.opp-hand-note {
+  font-size: 12px;
+  color: #fbe5a1;
+}
+
+.action-box .label {
+  padding-top: 6px;
+}
+
 .action-box {
   padding: 10px;
   border-radius: 12px;
@@ -266,6 +309,17 @@ input {
 .action-box.self {
   border-color: rgba(52, 211, 153, 0.4);
   background: rgba(52, 211, 153, 0.08);
+}
+
+.winner-flag {
+  color: #f5e1a8;
+  font-weight: 800;
+}
+
+.runout-detail-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #f5e1a8;
 }
 
 .action-buttons {
@@ -766,6 +820,29 @@ input {
   z-index: 1;
 }
 
+.modal-card.modal-card-wide {
+  max-width: 900px;
+  width: min(94vw, 900px);
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.runout-elo-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f5e1a8;
+  font-weight: 600;
+}
+
 .congrats-card {
   display: flex;
   flex-direction: column;
@@ -1063,12 +1140,13 @@ input {
 }
 
 .card-back {
-  background: #0f172a;
-  border: 1px solid #1f2937;
+  background: #0a0d16;
+  border: 1px solid #111827;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.35));
 }
 
 .card-back-inner {
@@ -1085,6 +1163,25 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.card-flip {
+  animation: flip-in 0.7s ease;
+  transform-style: preserve-3d;
+}
+
+@keyframes flip-in {
+  0% {
+    transform: rotateY(90deg);
+    opacity: 0;
+  }
+  60% {
+    transform: rotateY(-6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
 }
 
 .card-rank {
@@ -1120,6 +1217,15 @@ input {
 
 .board-panel .card-shell {
   background: #ffffff;
+}
+
+.board-panel .card-back {
+  background: #0a0d16;
+  border-color: #111827;
+}
+
+.board-panel .card-back .card-back-inner {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.35));
 }
 
 .showdown-panel {

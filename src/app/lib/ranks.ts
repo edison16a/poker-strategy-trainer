@@ -1,13 +1,13 @@
 import type { RankName } from "./types";
 
 export const RANKS: Array<{ name: RankName; minElo: number; maxElo: number }> = [
-  { name: "Bronze", minElo: 0, maxElo: 999 },
-  { name: "Silver", minElo: 1000, maxElo: 1999 },
-  { name: "Gold", minElo: 2000, maxElo: 2999 },
-  { name: "Diamond", minElo: 3000, maxElo: 3999 },
-  { name: "Mythic", minElo: 4000, maxElo: 4999 },
-  { name: "Legendary", minElo: 5000, maxElo: 5999 },
-  { name: "Champion", minElo: 6000, maxElo: Number.POSITIVE_INFINITY },
+  { name: "Bronze", minElo: 0, maxElo: 1499 },          // gap 1,500
+  { name: "Silver", minElo: 1500, maxElo: 3299 },        // gap 1,800
+  { name: "Gold", minElo: 3300, maxElo: 5499 },          // gap 2,200
+  { name: "Diamond", minElo: 5500, maxElo: 8099 },       // gap 2,600
+  { name: "Mythic", minElo: 8100, maxElo: 11299 },       // gap 3,200
+  { name: "Legendary", minElo: 11300, maxElo: 14999 },   // gap 3,700
+  { name: "Champion", minElo: 15000, maxElo: Number.POSITIVE_INFINITY },
 ];
 
 export function rankFromElo(elo: number): RankName {

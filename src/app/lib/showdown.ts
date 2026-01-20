@@ -43,6 +43,18 @@ export type ShowdownResult = {
   runoutDetail: string;
 };
 
+function formatDisplayName(p: { name: string; isHero: boolean }) {
+  if (p.isHero) return "You";
+  const m = p.name.match(/Opp ?([A-Z])/);
+  if (m) {
+    const idx = m[1].charCodeAt(0) - 64; // A=1
+    return `Opp ${idx}`;
+  }
+  const n = p.name.match(/Opp ?(\d)/);
+  if (n) return `Opp ${n[1]}`;
+  return p.name;
+}
+
 function rankLabel(v: number) {
   if (v === 14) return "A";
   if (v === 13) return "K";
@@ -303,12 +315,15 @@ export function resolveShowdown({
     ? `${decisionVillain.name} (${decisionVillain.evaluation.label})`
     : "Opponents";
   const showdownOppDesc = showdownVillain
-    ? `${showdownVillain.name} (${showdownVillain.evaluation.label})`
+    ? `${formatDisplayName(showdownVillain)} (${showdownVillain.evaluation.label})`
     : "Opponents";
 
-  let runoutDetail = `You held ${heroHandStr}. At decision on ${decisionBoardStr || "no board yet"}, best hand: ${decisionBest.map(p => `${p.name} (${p.evaluation.label})`).join(", ")}.`;
+  const decisionBestStr = decisionBest.map(p => `${formatDisplayName(p)} (${p.evaluation.label})`).join(", ");
+  const showdownBestStr = winners.map(p => `${formatDisplayName(p)} (${p.evaluation.label})`).join(", ");
+
+  let runoutDetail = `You held ${heroHandStr}. At decision on ${decisionBoardStr || "no board yet"}, best hand: ${decisionBestStr}.`;
   if (!heroFolded) {
-    runoutDetail += ` Final board ${finalBoardStr}. Showdown best: ${winners.map(p => `${p.name} (${p.evaluation.label})`).join(", ")}.`;
+    runoutDetail += ` Final board ${finalBoardStr}. Showdown best: ${showdownBestStr}.`;
     if (heroAheadAtDecision && heroWouldResult === "lose") {
       runoutDetail += ` Outdrawn by ${showdownOppDesc} on turn/river.`;
     } else if (!heroAheadAtDecision && heroWouldResult === "win") {

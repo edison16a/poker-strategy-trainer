@@ -7,9 +7,9 @@ import clsx from "clsx";
 import type { RankName } from "@/lib/types";
 
 function computeGlobalPlacement(elo: number, baseTime: number) {
-  // Champion ladder: bottom rank #5892 at 6000 Elo, top rank #1 at a moving ceiling.
-  const minElo = 6000;
-  const startMax = 11512;
+  // Champion ladder: bottom rank #5892 at 15000 Elo, top rank #1 at a moving ceiling.
+  const minElo = 15000;
+  const startMax = 21000;
 
   const elapsedMs = Math.max(0, Date.now() - baseTime);
   const cycleSeconds = 25;

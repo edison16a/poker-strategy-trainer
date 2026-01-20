@@ -8,8 +8,8 @@ import type { ReactElement } from "react";
 
 const MODE_COPY: Record<GameMode, string> = {
   HANDS: "Hands",
-  HANDS_PLUS: "Hands+",
-  GAME: "Game",
+  HANDS_PLUS: "Playthrough",
+  GAME: "Full Game",
 };
 
 export function ShowdownPanel({ result, mode }: { result: ShowdownResult; mode: GameMode }) {
@@ -33,7 +33,7 @@ export function ShowdownPanel({ result, mode }: { result: ShowdownResult; mode: 
   const outcomeLabel = result.heroFolded
     ? `Folded · would ${result.heroWouldResult === "win" ? "win" : result.heroWouldResult === "chop" ? "chop" : "lose"}`
     : result.heroWouldResult === "win"
-    ? "You win"
+    ? "You Won!"
     : result.heroWouldResult === "chop"
     ? "Chop"
     : "You lose";
@@ -71,7 +71,7 @@ export function ShowdownPanel({ result, mode }: { result: ShowdownResult; mode: 
           <>Winner: {activeWinnerNames}</>
         )}
       </div>
-      <div className="meta">{result.runoutDetail}</div>
+      <div className="runout-detail-text">{result.runoutDetail}</div>
 
       <div className="showdown-players">
         {result.players.map((p) => {

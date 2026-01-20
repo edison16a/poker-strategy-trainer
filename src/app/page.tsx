@@ -41,6 +41,9 @@ export default function Page() {
 
   const [statsOpen, setStatsOpen] = useState(false);
   const [ranksOpen, setRanksOpen] = useState(false);
+  const [turnPointer, setTurnPointer] = useState<number | null>(null); // -1 = hero turn
+  const [runoutOpen, setRunoutOpen] = useState(false);
+  const [runoutEloNote, setRunoutEloNote] = useState<string | null>(null);
   const revealTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const posTiming = (pos: TrainingState["heroPos"] | TrainingState["villainPos"]) => {
@@ -96,6 +99,9 @@ export default function Page() {
     setEloChange(null);
     setDecisionTaken(false);
     setShowdown(null);
+    setTurnPointer(null);
+    setRunoutOpen(false);
+    setRunoutEloNote(null);
 
     if (incrementHand) {
       setProfile(p => {
@@ -231,6 +237,7 @@ export default function Page() {
         decisionBoard: currentState.board,
       });
       setShowdown(result);
+      scheduleRunoutElo(result);
       setDecisionTaken(true);
       return;
     }
@@ -252,6 +259,7 @@ export default function Page() {
         decisionBoard: currentState.board,
       });
       setShowdown(result);
+      scheduleRunoutElo(result);
       setDecisionTaken(true);
       return;
     }
@@ -261,22 +269,143 @@ export default function Page() {
     const { actions, facing, potBb } = opponentActionsForStreet(currentState.opponentHands, boardView, nextStreet, potAfterHero);
     const outsInfo = computeOutsInfo(currentState.heroHand, boardCardsFromView(boardView), nextStreet) ?? undefined;
 
+    // Animate opponent sequence for non-HANDS modes so users can see the flow.
+    if (gameMode !== "HANDS") {
+      playOpponentSequence({
+        actions: actions as TrainingState["opponentActions"],
+        boardView,
+        facing,
+        potBb,
+        outsInfo,
+        nextStreet,
+        prevBoard: currentState.board,
+        prevStreet: currentState.street,
+      });
+    } else {
+      setState(prev => prev ? {
+        ...prev,
+        street: nextStreet,
+        board: boardView as TrainingState["board"],
+        opponentActions: actions as TrainingState["opponentActions"],
+        potBb,
+        facing,
+        outsInfo,
+      } : prev);
+
+      // fresh outs + decision for the new street
+      setOutsResult(null);
+      setOutsBonus(null);
+      setOutsAttempts(0);
+      setOutsReveal(false);
+      setDecisionTaken(false);
+    }
+  }
+
+  function playOpponentSequence({
+    actions,
+    boardView,
+    facing,
+    potBb,
+    outsInfo,
+    nextStreet,
+    prevBoard,
+    prevStreet,
+  }: {
+    actions: TrainingState["opponentActions"];
+    boardView: BoardView;
+    facing: TrainingState["facing"];
+    potBb: number;
+    outsInfo: TrainingState["outsInfo"];
+    nextStreet: TrainingState["street"];
+    prevBoard: TrainingState["board"];
+    prevStreet: TrainingState["street"];
+  }) {
+    clearRevealTimers();
+    const blankActions = actions.map(a => ({ name: a.name, action: "CHECK" as OpponentAction }));
+
     setState(prev => prev ? {
       ...prev,
-      street: nextStreet,
-      board: boardView as TrainingState["board"],
-      opponentActions: actions as TrainingState["opponentActions"],
+      street: prevStreet,
+      board: prevBoard as TrainingState["board"],
+      opponentActions: blankActions,
       potBb,
-      facing,
+      facing: null,
       outsInfo,
     } : prev);
 
-    // fresh outs + decision for the new street
-    setOutsResult(null);
-    setOutsBonus(null);
-    setOutsAttempts(0);
-    setOutsReveal(false);
-    setDecisionTaken(false);
+    actions.forEach((action, idx) => {
+      revealTimers.current.push(setTimeout(() => {
+        setTurnPointer(idx);
+        setState(prev => prev ? {
+          ...prev,
+          opponentActions: actions.map((a, i) => i <= idx ? a : blankActions[i]),
+          facing: action.action === "BET" || action.action === "RAISE" ? { type: action.action, sizeBb: action.sizeBb ?? 0 } : prev.facing,
+        } : prev);
+      }, idx * 450));
+    });
+
+    // After sequence completes, allow hero to act.
+    revealTimers.current.push(setTimeout(() => {
+      setTurnPointer(-1); // hero turn
+      setState(prev => prev ? {
+        ...prev,
+        street: nextStreet,
+        board: boardView as TrainingState["board"],
+        opponentActions: actions,
+        facing,
+      } : prev);
+      if (facing == null && actions.length === 0) {
+        setTurnPointer(-1);
+      }
+      setOutsResult(null);
+      setOutsBonus(null);
+      setOutsAttempts(0);
+      setOutsReveal(false);
+      setDecisionTaken(false);
+      setTurnPointer(null);
+    }, actions.length * 450 + 200));
+  }
+
+  function applyRunoutElo(result: ShowdownResult) {
+    if (gameMode === "HANDS") return;
+    const stayedIn = !result.heroFolded;
+    let delta = 0;
+    if (stayedIn) {
+      if (result.heroWouldResult === "win") delta = 60;
+      else if (result.heroWouldResult === "chop") delta = 20;
+      else delta = -60;
+    } else {
+      delta = result.heroWouldResult === "lose" ? 40 : result.heroWouldResult === "chop" ? 10 : -30;
+    }
+    if (delta === 0) return;
+    setProfile(p => {
+      if (!p) return p;
+      const newElo = clampElo(p.elo + delta);
+      const newRank = rankFromElo(newElo);
+      return {
+        ...p,
+        elo: newElo,
+        rank: newRank,
+        lastPlayedISO: new Date().toISOString(),
+      };
+    });
+    setEloChange(prev => (prev ?? 0) + delta);
+    const reason = stayedIn
+      ? result.heroWouldResult === "win"
+        ? "stayed in and won"
+        : result.heroWouldResult === "chop"
+        ? "stayed in and chopped"
+        : "stayed in and lost"
+      : result.heroWouldResult === "lose"
+      ? "folded to prevent a loss"
+      : "folded while ahead";
+    setRunoutEloNote(`Runout Elo (applied to profile; separate from decision score): ${delta >= 0 ? "+" : ""}${delta}. Reason: ${reason}.`);
+  }
+
+  function scheduleRunoutElo(result: ShowdownResult) {
+    if (gameMode === "HANDS") return;
+    const timer = setTimeout(() => applyRunoutElo(result), 900);
+    revealTimers.current.push(timer);
   }
 
   function handleOutsResult(answer: number, kind: "perfect" | "close" | "wrong") {
@@ -449,7 +578,7 @@ export default function Page() {
             <div className="panel-hero">
               <div className="hero-overlay" />
               <div className="hero-content stack-md">
-                <Board state={state} />
+                <Board state={state} gameMode={gameMode} />
 
                 <div className="hero-hand">
                   <div className="label">Your hand</div>
@@ -462,6 +591,14 @@ export default function Page() {
                       const oppBox = (idx: number) => {
                         const opp = state.opponentActions[idx];
                         const label = `Opp ${idx + 1}`;
+                        const showdownPlayer = showdown?.players.find(p =>
+                          p.name === `Opp ${idx + 1}` || p.id === `Opp${String.fromCharCode(65 + idx)}`
+                        );
+                        const oppHand = state.opponentHands?.[idx]?.hand;
+                        const isWinner = showdown
+                          ? showdown.activeWinners.some(w => w.id === (showdownPlayer?.id ?? `Opp${String.fromCharCode(65 + idx)}`))
+                          : false;
+                        const turnActive = turnPointer === idx;
                         const act = opp
                           ? (() => {
                               const size = opp.sizeBb ?? 0;
@@ -474,16 +611,46 @@ export default function Page() {
                             })()
                           : "—";
                         return { key: label, content: (
-                          <div className="action-box" key={label}>
-                            <div className="label">{label}</div>
+                          <div className={`action-box ${isWinner ? "opp-winner" : ""} ${turnActive ? "turn-active" : ""}`} key={label}>
+                            {gameMode !== "HANDS" && oppHand && (
+                              <div className="opp-showdown">
+                                <div className="opp-showdown-cards">
+                                  <CardView card={oppHand[0]} small hidden={!showdown} animateFlip />
+                                  <CardView card={oppHand[1]} small hidden={!showdown} animateFlip />
+                                </div>
+                                {showdownPlayer && <div className="opp-hand-note">{showdownPlayer.evaluation.label}</div>}
+                              </div>
+                            )}
+                            <div className="label">
+                              {isWinner ? <span className="winner-flag">{label} Won!</span> : label}
+                            </div>
                             <div className="muted-strong">{act}</div>
                           </div>
                         )};
                       };
 
+                      const heroIsWinner = showdown ? showdown.activeWinners.some(w => w.isHero) : false;
+                      const heroTurnActive = turnPointer === -1;
                       const heroBox = (
-                        <div className="action-box self" key="you">
-                          <div className="label">You</div>
+                        <div className={`action-box self ${heroIsWinner ? "opp-winner" : ""} ${heroTurnActive ? "turn-active" : ""}`} key="you">
+                          <div className="opp-showdown">
+                            <div className="opp-showdown-cards">
+                              {gameMode !== "HANDS" && (
+                                <>
+                                  <CardView card={state.heroHand[0]} small hidden={!showdown} animateFlip />
+                                  <CardView card={state.heroHand[1]} small hidden={!showdown} animateFlip />
+                                </>
+                              )}
+                            </div>
+                            {showdown && (
+                              <div className="opp-hand-note">
+                                {showdown.players.find(p => p.isHero)?.evaluation.label}
+                              </div>
+                            )}
+                          </div>
+                          <div className="label">
+                            {heroIsWinner ? <span className="winner-flag">You Won!</span> : "You"}
+                          </div>
                           <div className="muted-strong">{posTiming(state.heroPos)}</div>
                         </div>
                       );
@@ -517,8 +684,12 @@ export default function Page() {
               </div>
             </div>
 
-            {showdown && (
-              <ShowdownPanel result={showdown} mode={gameMode} />
+            {showdown && gameMode !== "HANDS" && (
+              <div className="stack-sm">
+                <button className="btn" onClick={() => setRunoutOpen(true)}>
+                  Runout Details
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -551,6 +722,19 @@ export default function Page() {
               </div>
               <button className="btn" onClick={() => setRankCongrats(null)}>Close</button>
             </div>
+          </div>
+        </div>
+      )}
+      {runoutOpen && showdown && (
+        <div className="modal-backdrop">
+          <div className="modal-scrim" onClick={() => setRunoutOpen(false)} />
+          <div className="modal-card modal-card-wide">
+            <div className="modal-head">
+              <div className="label-strong">Detailed Runout</div>
+              <button className="btn ghost" onClick={() => setRunoutOpen(false)}>Close</button>
+            </div>
+            <ShowdownPanel result={showdown} mode={gameMode} />
+            {runoutEloNote && <div className="runout-elo-note">{runoutEloNote}</div>}
           </div>
         </div>
       )}

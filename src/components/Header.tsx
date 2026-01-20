@@ -6,8 +6,8 @@ import clsx from "clsx";
 
 const MODE_LABELS: Record<GameMode, string> = {
   HANDS: "Hands",
-  HANDS_PLUS: "Hands+",
-  GAME: "Game",
+  HANDS_PLUS: "Playthrough",
+  GAME: "Full Game",
 };
 
 export function Header({

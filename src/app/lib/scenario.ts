@@ -16,7 +16,7 @@ function randomPositions() {
 
 function streetOrder(mode: GameMode): Street[] {
   if (mode === "GAME") return ["PREFLOP"];
-  return ["FLOP", "TURN", "RIVER"];
+  return ["PREFLOP", "FLOP", "TURN", "RIVER"];
 }
 
 function randRange(min: number, max: number, precision = 2) {
