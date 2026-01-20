@@ -9,4 +9,8 @@ Try it out here: https://poker-strats.vercel.app/
 - 🧮 **Outs Trainer**: learn how to **calculate outs** + quick equity (Rule of 2 & 4)
 - 💾 **Saves locally**: progress stored in your browser
 
-<img width="985" height="669" alt="Screenshot 2026-01-19 at 9 23 12 PM" src="https://github.com/user-attachments/assets/b00885fb-4c0a-4ef4-b558-41c62a24a6d7" />
+# Screenshots
+
+<img width="966" height="605" alt="Screenshot 2026-01-20 at 1 33 24 PM" src="https://github.com/user-attachments/assets/c25e423f-4c53-49a4-84d0-6397334aa16a" />
+<img width="1033" height="787" alt="Screenshot 2026-01-20 at 1 33 49 PM" src="https://github.com/user-attachments/assets/769291a5-10de-43f7-8aab-399687ccda3f" />
+
