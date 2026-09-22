@@ -64,7 +64,11 @@ function straightDrawOuts(all: Card[]): { outs: number; label: string } {
  * when there is no recognised draw (or the street has no cards to come).
  */
 export function computeOutsInfo(heroHand: [Card, Card], boardCards: Card[], street: Street): OutsInfo | null {
-  if (street === "PREFLOP" || boardCards.length < 3) return null;
+  // Before the fix only preflop was excluded, so river spots got an outs
+  // count and a rule-of-2 equity for cards that could never come. The
+  // quiz panel already hid itself on the river, but the coach still
+  // reported the draw and let its equity raise the estimate.
+  if (street === "PREFLOP" || street === "RIVER" || boardCards.length < 3) return null;
 
   const all = [...heroHand, ...boardCards];
   const boardCounts = countBy(boardCards.map(c => c.r));
