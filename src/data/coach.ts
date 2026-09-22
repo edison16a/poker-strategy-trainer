@@ -24,8 +24,8 @@ export type PreflopProfileKey = keyof typeof raw.preflopProfiles;
  * The values are the original inline constants moved verbatim; nothing was
  * retuned during the extraction.
  */
-export const COACH = raw as {
-  tuning: typeof raw.tuning & {
+export const COACH = raw as unknown as {
+  tuning: Omit<typeof raw.tuning, "verdicts"> & {
     verdicts: Array<{ minScore: number; verdict: CoachVerdict }>;
   };
   preflopProfiles: Record<PreflopProfileKey, PreflopProfileRow>;

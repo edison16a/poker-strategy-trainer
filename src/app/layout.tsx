@@ -1,9 +1,10 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { COPY } from "@/data/copy";
 
 export const metadata: Metadata = {
-  title: "Poker Strategy Trainer",
-  description: "Poker strategy puzzles, AI coaching, and outs training.",
+  title: COPY.app.title,
+  description: COPY.app.description,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
