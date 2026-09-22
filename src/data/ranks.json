@@ -1,0 +1,17 @@
+{
+  "ladder": [
+    { "name": "Bronze",    "minElo": 0,     "maxElo": 1499,  "topPct": "Top 100%",  "outsPenaltyFactor": 0.3, "image": "/ranks/bronze.png" },
+    { "name": "Silver",    "minElo": 1500,  "maxElo": 3299,  "topPct": "Top 60%",   "outsPenaltyFactor": 0.4, "image": "/ranks/silver.png" },
+    { "name": "Gold",      "minElo": 3300,  "maxElo": 5499,  "topPct": "Top 25%",   "outsPenaltyFactor": 0.6, "image": "/ranks/gold.png" },
+    { "name": "Diamond",   "minElo": 5500,  "maxElo": 8099,  "topPct": "Top 10%",   "outsPenaltyFactor": 0.8, "image": "/ranks/diamond.png" },
+    { "name": "Mythic",    "minElo": 8100,  "maxElo": 11299, "topPct": "Top 3%",    "outsPenaltyFactor": 1.0, "image": "/ranks/mythic.png" },
+    { "name": "Legendary", "minElo": 11300, "maxElo": 14999, "topPct": "Top 1%",    "outsPenaltyFactor": 1.3, "image": "/ranks/legendary.png" },
+    { "name": "Champion",  "minElo": 15000, "maxElo": null,  "topPct": "Top 0.37%", "outsPenaltyFactor": 1.5, "image": "/ranks/champion.png" }
+  ],
+  "unknownRankPenaltyFactor": 1,
+  "championLadder": {
+    "minElo": 15000,
+    "ceilingElo": 21000,
+    "bottomGlobalRank": 5892
+  }
+}
