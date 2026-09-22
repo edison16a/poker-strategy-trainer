@@ -1,0 +1,173 @@
+{
+  "app": {
+    "title": "Poker Strategy Trainer",
+    "description": "Poker strategy puzzles, AI coaching, and outs training.",
+    "subtitle": "Poker Puzzles + AI Coaching + Outs Training",
+    "loading": "Loading…"
+  },
+  "header": {
+    "stats": "Stats",
+    "modeGroupLabel": "Game mode"
+  },
+  "common": {
+    "close": "Close",
+    "submit": "Submit",
+    "apply": "Apply",
+    "empty": "—"
+  },
+  "board": {
+    "board": "Board",
+    "pot": "Pot",
+    "yourHand": "Your hand"
+  },
+  "seats": {
+    "opponent": "Opp {n}",
+    "you": "You",
+    "opponentWon": "{label} Won!",
+    "youWon": "You Won!",
+    "bet": "Bet ${size}",
+    "raise": "Raise ${size}",
+    "check": "Check",
+    "call": "Call",
+    "fold": "Fold"
+  },
+  "actions": {
+    "fold": "Fold",
+    "check": "Check",
+    "call": "Call (${amount})",
+    "raise": "Raise (${amount})",
+    "raiseTitle": "Set your raise size below"
+  },
+  "ranks": {
+    "viewAll": "View all ranks",
+    "rank": "Rank",
+    "allRanks": "All ranks",
+    "eloMin": "Elo: {min}"
+  },
+  "eloBar": {
+    "elo": "Elo",
+    "eloSuffix": " Elo",
+    "globalRank": "Global rank",
+    "movedUp": "Moved Up ",
+    "movedDown": "Moved Down ",
+    "spots": " spots",
+    "topRank": "Top rank achieved",
+    "atRank": "At {next}",
+    "eloTo": "{remaining} Elo to {next}",
+    "progress": "{pct}% to next rank · {remaining}"
+  },
+  "coach": {
+    "title": "AI Coach",
+    "thinking": "Thinking…",
+    "errorHint": "If you see this often, check your `.env.local` and API key quota.",
+    "prompt": "Make a decision to get feedback (score + best action + why).",
+    "score": "Score",
+    "scoreValue": "{score}/100",
+    "eloChange": "Elo change:",
+    "bestAction": "Best action:"
+  },
+  "outs": {
+    "title": "Outs Trainer",
+    "chartButton": "$",
+    "chartButtonLabel": "Pot odds chart",
+    "helpButton": "?",
+    "helpButtonLabel": "Show outs help",
+    "placeholder": "Enter outs",
+    "resultPerfect": "Great read. Your estimate implies ~{river}% by river and ~{next}% to the next card.",
+    "resultClose": "Close. Your outs guess gives ~{river}% to river and ~{next}% to the next card.",
+    "resultWrong": "Keep refining. Your estimate implies ~{river}% by river and ~{next}% to the next card.",
+    "attemptsLeft": " (Attempts left: {n})",
+    "correctOuts": "Correct outs: {n}.",
+    "why": "Why: ",
+    "yourGuess": "Your guess: {n}.",
+    "eloGain": "Elo gain: +{n}",
+    "eloLoss": "Elo loss: {n}",
+    "thisHand": "This hand:",
+    "exercise": "Outs exercise",
+    "flushHint": " (4 to a suit = 9 outs)",
+    "flopToRiver": "Flop → River",
+    "nextCard": "Next card",
+    "outsToPct": "Outs to %",
+    "ruleFour": "Outs × 4 ≈ hit %",
+    "ruleTwo": "Outs × 2 ≈ hit %",
+    "help": "Enter the number of outs (not a %). Outs = cards that improve you on the next card or by the river (e.g., flush draw: 9 outs; open-ended straight: 8; gutshot: 4). Pairs you already hold are not counted as outs.",
+    "shouldICall": "Should I call?"
+  },
+  "stats": {
+    "title": "Stats",
+    "totalHands": "Total hands",
+    "decisions": "Decisions",
+    "correctOuts": "Correct outs",
+    "lastCoachScore": "Last coach score",
+    "preferredHands": "Preferred Hands",
+    "preferredHandsNote": "Affects Hands mode only",
+    "preferredHandsGroupLabel": "Preferred hand types",
+    "storedPrefix": "Stored ",
+    "storedLink": "locally",
+    "storedSuffix": " in your browser (localStorage). No accounts, no backend.",
+    "setElo": "Set Elo",
+    "closeCheat": "Close cheat",
+    "eloPlaceholder": "Enter Elo"
+  },
+  "runout": {
+    "detailsButton": "Runout Details",
+    "detailsTitle": "Detailed Runout",
+    "eloNote": "Runout Elo (applied to profile; separate from decision score): {delta}. Reason: {reason}.",
+    "reasons": {
+      "stayedWon": "stayed in and won",
+      "stayedChopped": "stayed in and chopped",
+      "stayedLost": "stayed in and lost",
+      "foldedSaved": "folded to prevent a loss",
+      "foldedAhead": "folded while ahead"
+    }
+  },
+  "congrats": {
+    "title": "Congratulations",
+    "champion": "🎉 Congrats! You reached Champion. Global rank will appear in the Elo bar.",
+    "newRank": "🎉 Congrats! New rank: {rank} ({topPct})."
+  },
+  "showdownPanel": {
+    "title": "Runout",
+    "modeLine": "{mode} mode · Your action: {action}",
+    "foldedWould": "Folded · would {outcome}",
+    "win": "win",
+    "chop": "chop",
+    "lose": "lose",
+    "youWon": "You Won!",
+    "chopLabel": "Chop",
+    "youLose": "You lose",
+    "actionCall": "Call",
+    "actionRaise": "Raise",
+    "actionFold": "Fold",
+    "potGoesTo": "Pot goes to {names}.",
+    "runoutBest": "Runout best: {names}.",
+    "winner": "Winner: {names}",
+    "opponents": "Opponents",
+    "chipYou": "You",
+    "chipTakesPot": "Takes pot",
+    "chipBestRunout": "Best runout"
+  },
+  "showdown": {
+    "you": "You",
+    "opponent": "Opp {n}",
+    "opponents": "Opponents",
+    "notes": {
+      "foldedAhead": "You folded while ahead; future cards could still change, but hero was leading at decision.",
+      "foldedBehind": "Folded behind; discipline saved chips.",
+      "outdrawn": "Tough runout: you were ahead when you acted and got outdrawn.",
+      "improved": "You improved to win; the runout favored your line.",
+      "chopAhead": "Ahead but ended in a chop; variance evened out.",
+      "chopBehind": "Behind to start, chop after runout.",
+      "heldUp": "Still ahead through showdown; solid line.",
+      "behind": "Was behind at decision; consider if a tighter line was better."
+    },
+    "detail": {
+      "held": "You held {hand}. At decision on {board}, best hand: {best}.",
+      "noBoard": "no board yet",
+      "final": " Final board {board}. Showdown best: {best}.",
+      "outdrawnBy": " Outdrawn by {opp} on turn/river.",
+      "improvedOver": " You improved to beat {opp}.",
+      "folded": " You folded; final board {board}."
+    }
+  }
+}

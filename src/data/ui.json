@@ -1,0 +1,15 @@
+{
+  "raiseSlider": {
+    "defaultBb": 3,
+    "minBb": 1,
+    "maxFloorBb": 10,
+    "maxCallMultiplier": 4,
+    "fallbackCallBb": 5,
+    "suggestedCallMultiplier": 1.5,
+    "stepBb": 0.5
+  },
+  "eloFlashMs": 3000,
+  "championIcons": { "current": "🏅", "next": "🥇" },
+  "profileStorageKey": "poker-train.profile.v1",
+  "coachEndpoint": "/api/coach"
+}
