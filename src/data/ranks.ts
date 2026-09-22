@@ -1,4 +1,5 @@
 import raw from "./ranks.json";
+import type { RankName } from "@/domain/types";
 
 /**
  * A rank tier on the Elo ladder.
@@ -8,7 +9,7 @@ import raw from "./ranks.json";
  * `Number.POSITIVE_INFINITY` so range checks stay simple.
  */
 export type RankTier = {
-  name: string;
+  name: RankName;
   minElo: number;
   maxElo: number;
   /** Marketing-style percentile shown in the rank list and congrats modal. */
@@ -31,6 +32,7 @@ export type ChampionLadder = {
 /** Ordered from lowest to highest tier. Order in the JSON is significant. */
 export const RANK_LADDER: RankTier[] = raw.ladder.map(tier => ({
   ...tier,
+  name: tier.name as RankName,
   maxElo: tier.maxElo ?? Number.POSITIVE_INFINITY,
 }));
 
