@@ -73,6 +73,9 @@ export function opponentActionsForStreet(
         return { name: opp.name, action: "CALL", sizeBb };
       }
       if (rng() < cfg.foldChance) return { name: opp.name, action: "FOLD" };
+      // Before the fix this call did not add its chips to the pot, unlike
+      // the strong-hand call above, so the pot understated what was in it.
+      newPot = Math.round((newPot + sizeBb) * 100) / 100;
       return { name: opp.name, action: "CALL", sizeBb };
     }
     return { name: opp.name, action: "CHECK" };
