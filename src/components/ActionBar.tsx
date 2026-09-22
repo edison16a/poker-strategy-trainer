@@ -1,9 +1,29 @@
 "use client";
 
-import type { PlayerAction } from "@/lib/types";
-import { useEffect, useMemo, useState } from "react";
+import type { PlayerAction } from "@/domain/types";
+import { useState } from "react";
 import clsx from "clsx";
+import { fmt } from "@/domain/text";
+import { COPY } from "@/data/copy";
+import { UI } from "@/data/ui";
 
+const S = UI.raiseSlider;
+
+/** Slider ceiling: a multiple of the bet being faced, never below the floor. */
+function maxRaiseFor(callAmount: number | null | undefined): number {
+  return Math.max(S.maxFloorBb, (callAmount ?? S.fallbackCallBb) * S.maxCallMultiplier);
+}
+
+/** Default slider position: a sensible re-raise of the bet faced, or the base open size. */
+function suggestedRaiseFor(callAmount: number | null | undefined): number {
+  if (callAmount && callAmount > 0) {
+    const suggested = Math.max(S.minBb, Number((callAmount * S.suggestedCallMultiplier).toFixed(2)));
+    return Math.min(suggested, maxRaiseFor(callAmount));
+  }
+  return S.defaultBb;
+}
+
+/** Fold, call/check and raise buttons plus the raise-size slider. */
 export function ActionBar({
   disabled,
   callAmount,
@@ -13,21 +33,22 @@ export function ActionBar({
   callAmount?: number | null;
   onAction: (a: PlayerAction, raiseSizeBb?: number) => void;
 }) {
-  const [raiseSize, setRaiseSize] = useState<number>(3);
+  const [raiseSize, setRaiseSize] = useState<number>(() => suggestedRaiseFor(callAmount));
+  const maxRaise = maxRaiseFor(callAmount);
 
-  const minRaise = 1;
-  const maxRaise = useMemo(() => Math.max(10, (callAmount ?? 5) * 4), [callAmount]);
+  // Reset the slider whenever the bet being faced changes. This was an
+  // effect that called setState after render; adjusting state during
+  // render on a prop change is the pattern React recommends instead and
+  // saves the extra render.
+  const [prevCallAmount, setPrevCallAmount] = useState(callAmount);
+  if (prevCallAmount !== callAmount) {
+    setPrevCallAmount(callAmount);
+    setRaiseSize(suggestedRaiseFor(callAmount));
+  }
 
-  useEffect(() => {
-    if (callAmount && callAmount > 0) {
-      const suggested = Math.max(minRaise, Number((callAmount * 1.5).toFixed(2)));
-      setRaiseSize(Math.min(suggested, maxRaise));
-    } else {
-      setRaiseSize(3);
-    }
-  }, [callAmount, maxRaise]);
-
-  const callLabel = callAmount && callAmount > 0 ? `Call ($${callAmount.toFixed(2)})` : "Check";
+  const callLabel = callAmount && callAmount > 0
+    ? fmt(COPY.actions.call, { amount: callAmount.toFixed(2) })
+    : COPY.actions.check;
 
   return (
     <div className="panel action-bar">
@@ -37,7 +58,7 @@ export function ActionBar({
           onClick={() => onAction("FOLD")}
           className={clsx("btn", disabled && "btn-disabled")}
         >
-          Fold
+          {COPY.actions.fold}
         </button>
 
         <button
@@ -52,18 +73,18 @@ export function ActionBar({
           disabled={disabled}
           onClick={() => onAction("RAISE", raiseSize)}
           className={clsx("btn", "btn-accent", disabled && "btn-disabled")}
-          title="Set your raise size below"
+          title={COPY.actions.raiseTitle}
         >
-          Raise (${raiseSize.toFixed(2)})
+          {fmt(COPY.actions.raise, { amount: raiseSize.toFixed(2) })}
         </button>
       </div>
 
       <div className="raise-slider">
         <input
           type="range"
-          min={minRaise}
+          min={S.minBb}
           max={maxRaise}
-          step={0.5}
+          step={S.stepBb}
           value={raiseSize}
           onChange={e => setRaiseSize(Number(e.target.value))}
           disabled={disabled}

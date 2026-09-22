@@ -2,103 +2,85 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { rankProgress, rankImagePath } from "@/lib/ranks";
 import clsx from "clsx";
-import type { RankName } from "@/lib/types";
+import type { RankName } from "@/domain/types";
+import { computeGlobalPlacement, rankProgress } from "@/domain/ranks";
+import { fmt } from "@/domain/text";
+import { COPY } from "@/data/copy";
+import { UI } from "@/data/ui";
 
-function computeGlobalPlacement(elo: number, baseTime: number) {
-  // Champion ladder: bottom rank #5892 at 15000 Elo, top rank #1 at a moving ceiling.
-  const minElo = 15000;
-  const startMax = 21000;
-
-  const elapsedMs = Math.max(0, Date.now() - baseTime);
-  const cycleSeconds = 25;
-  const cycles = Math.floor(elapsedMs / (cycleSeconds * 1000));
-  const variableStep = 20 + 5 * Math.sin(cycles * 0.7); // stays ~15–25
-  const maxElo = startMax + Math.round(cycles * variableStep);
-
-  const spread = Math.max(1, maxElo - minElo);
-  const clamped = Math.min(Math.max(elo, minElo), maxElo);
-  const ratio = (maxElo - clamped) / spread;
-  const globalRank = Math.max(1, Math.ceil(1 + ratio * (5892 - 1)));
-
-  return { globalRank, maxElo };
+/**
+ * True for a few seconds after `trigger` changes while `active`. The show
+ * step happens during render (a prop-change adjustment) and only the hide
+ * timer lives in an effect, which keeps the React compiler's
+ * set-state-in-effect rule happy.
+ */
+function useFlash(trigger: unknown, active: boolean): boolean {
+  const [shown, setShown] = useState(false);
+  const [seenTrigger, setSeenTrigger] = useState(trigger);
+  if (seenTrigger !== trigger) {
+    setSeenTrigger(trigger);
+    setShown(active);
+  }
+  useEffect(() => {
+    if (!shown) return;
+    const t = setTimeout(() => setShown(false), UI.eloFlashMs);
+    return () => clearTimeout(t);
+  }, [shown, trigger]);
+  return shown;
 }
 
+/**
+ * Elo, rank progress to the next tier, and (for Champions) the synthetic
+ * global rank with a "moved up/down" flash when it changes.
+ */
 export function EloBar({ elo, eloChange, rankName }: { elo: number; eloChange?: number | null; rankName: RankName }) {
+  const E = COPY.eloBar;
   const { current, next, pct } = rankProgress(elo);
   const pct100 = Math.round(pct * 100);
+  const isChampion = rankName === "Champion";
 
-  // Force periodic recompute for the dynamic ladder ceiling and on Elo changes.
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setTick(t => t + 1), 15000 + Math.round(Math.random() * 5000));
-    return () => clearInterval(id);
-  }, []);
+  const placement = isChampion ? computeGlobalPlacement(elo) : null;
+  const currentGlobal = placement?.globalRank ?? null;
 
-  const placement = rankName === "Champion" ? computeGlobalPlacement(elo, Date.now() + tick) : null;
+  // Track the previous global rank so a change can be announced. Each branch
+  // only writes when something differs, so render settles in one pass.
   const [lastGlobal, setLastGlobal] = useState<number | null>(null);
   const [prevGlobal, setPrevGlobal] = useState<number | null>(null);
-  useEffect(() => {
-    if (rankName !== "Champion" || placement?.globalRank == null) {
+  if (currentGlobal == null) {
+    if (lastGlobal != null || prevGlobal != null) {
       setLastGlobal(null);
       setPrevGlobal(null);
-      return;
     }
+  } else if (lastGlobal == null) {
+    setPrevGlobal(null);
+    setLastGlobal(currentGlobal);
+  } else if (currentGlobal !== lastGlobal) {
+    setPrevGlobal(lastGlobal);
+    setLastGlobal(currentGlobal);
+  }
 
-    if (lastGlobal == null) {
-      setPrevGlobal(null);
-      setLastGlobal(placement.globalRank);
-      return;
-    }
-
-    if (placement.globalRank !== lastGlobal) {
-      setPrevGlobal(lastGlobal);
-      setLastGlobal(placement.globalRank);
-    }
-  }, [placement?.globalRank, rankName, lastGlobal]);
-
-  const remaining =
-    next.maxElo === Number.POSITIVE_INFINITY
-      ? Math.max(0, next.minElo - elo)
-      : Math.max(0, next.minElo - elo);
-
+  const remaining = Math.max(0, next.minElo - elo);
   const remainingText =
     current.name === next.name
-      ? "Top rank achieved"
+      ? E.topRank
       : remaining === 0
-      ? `At ${next.name}`
-      : `${remaining} Elo to ${next.name}`;
+      ? fmt(E.atRank, { next: next.name })
+      : fmt(E.eloTo, { remaining, next: next.name });
 
-  const leftIcon = current.name === "Champion" ? "🏅" : null;
-  const rightIcon = current.name === "Champion" ? "🥇" : null;
+  const championIcons = current.name === "Champion" ? UI.championIcons : null;
 
-  // Timed visibility for animations
-  const [showEloChange, setShowEloChange] = useState(false);
-  useEffect(() => {
-    if (eloChange != null) {
-      setShowEloChange(true);
-      const t = setTimeout(() => setShowEloChange(false), 3000);
-      return () => clearTimeout(t);
-    }
-  }, [eloChange]);
+  const showEloChange = useFlash(eloChange, eloChange != null);
+  const globalMoved = prevGlobal != null && lastGlobal != null && prevGlobal !== lastGlobal;
+  const showGlobalChange = useFlash(`${prevGlobal}-${lastGlobal}`, globalMoved);
 
-  const [showGlobalChange, setShowGlobalChange] = useState(false);
-  useEffect(() => {
-    if (prevGlobal != null && lastGlobal != null && prevGlobal !== lastGlobal) {
-      setShowGlobalChange(true);
-      const t = setTimeout(() => setShowGlobalChange(false), 3000);
-      return () => clearTimeout(t);
-    }
-  }, [prevGlobal, lastGlobal]);
-
-  const shownGlobal = rankName === "Champion" ? (lastGlobal ?? placement?.globalRank ?? null) : null;
+  const shownGlobal = isChampion ? (lastGlobal ?? currentGlobal) : null;
 
   return (
     <div className="panel">
       <div className="row-between">
         <div>
-          <div className="label">Elo</div>
+          <div className="label">{E.elo}</div>
           <div className="title-sm elo-main">
             {elo}
             {eloChange != null && showEloChange && (
@@ -107,18 +89,18 @@ export function EloBar({ elo, eloChange, rankName }: { elo: number; eloChange?: 
                 className={clsx("elo-change", eloChange >= 0 ? "elo-gain" : "elo-loss")}
               >
                 {eloChange >= 0 ? "+" : ""}
-                {eloChange} Elo
+                {eloChange}{E.eloSuffix}
               </span>
             )}
           </div>
         </div>
         {current.name === "Champion" ? (
           <div className="text-right rank-display">
-            <div className="label">Global rank</div>
+            <div className="label">{E.globalRank}</div>
             <div className="rank-big">
-              {shownGlobal ? `#${shownGlobal}` : "—"}
+              {shownGlobal ? `#${shownGlobal}` : COPY.common.empty}
             </div>
-            {prevGlobal != null && lastGlobal != null && prevGlobal !== lastGlobal && showGlobalChange && (
+            {globalMoved && showGlobalChange && (
               <div
                 className={clsx(
                   "rank-global-change",
@@ -126,15 +108,15 @@ export function EloBar({ elo, eloChange, rankName }: { elo: number; eloChange?: 
                   "elo-change"
                 )}
               >
-                {prevGlobal > lastGlobal ? "Moved Up " : "Moved Down "}
+                {prevGlobal > lastGlobal ? E.movedUp : E.movedDown}
                 <strong>{Math.abs(prevGlobal - lastGlobal)}</strong>
-                {" "}spots
+                {E.spots}
               </div>
             )}
           </div>
         ) : (
           <div className="text-right rank-display">
-            <div className="label">Rank</div>
+            <div className="label">{COPY.ranks.rank}</div>
             <div className="rank-big">{current.name}</div>
           </div>
         )}
@@ -144,30 +126,29 @@ export function EloBar({ elo, eloChange, rankName }: { elo: number; eloChange?: 
         <>
           <div className="progress-row">
             <div className="rank-icon">
-              {leftIcon ? (
-                <div className="rank-emoji">{leftIcon}</div>
+              {championIcons ? (
+                <div className="rank-emoji">{championIcons.current}</div>
               ) : (
-                <Image src={rankImagePath(current.name)} alt={current.name} fill sizes="60px" className="rank-image" />
+                <Image src={current.image} alt={current.name} fill sizes="60px" className="rank-image" />
               )}
             </div>
             <div className="progress-track with-icons">
               <div className="progress-bar" style={{ width: `${pct100}%` }} />
             </div>
             <div className="rank-icon">
-              {rightIcon ? (
-                <div className="rank-emoji">🥇</div>
+              {championIcons ? (
+                <div className="rank-emoji">{championIcons.next}</div>
               ) : (
-                <Image src={rankImagePath(next.name)} alt={next.name} fill sizes="60px" className="rank-image" />
+                <Image src={next.image} alt={next.name} fill sizes="60px" className="rank-image" />
               )}
             </div>
           </div>
 
           <div className="meta meta-center">
-            {pct100}% to next rank · {remainingText}
+            {fmt(E.progress, { pct: pct100, remaining: remainingText })}
           </div>
         </>
       )}
-
     </div>
   );
 }

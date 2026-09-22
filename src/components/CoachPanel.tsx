@@ -1,8 +1,11 @@
 "use client";
 
-import type { CoachResponse } from "@/lib/types";
+import type { CoachResponse } from "@/domain/types";
 import clsx from "clsx";
+import { fmt } from "@/domain/text";
+import { COPY } from "@/data/copy";
 
+/** Score, verdict, best line and reasons for the last decision. */
 export function CoachPanel({
   loading,
   coach,
@@ -14,10 +17,11 @@ export function CoachPanel({
   error: string | null;
   eloChange: number | null;
 }) {
+  const C = COPY.coach;
   return (
     <div className="panel coach-panel">
       <div className="row-between">
-        <div className="label-strong">AI Coach</div>
+        <div className="label-strong">{C.title}</div>
         {coach && (
           <div className={clsx("verdict-pill", coach.verdict)}>
             {coach.verdict.toUpperCase()}
@@ -27,7 +31,7 @@ export function CoachPanel({
 
       {loading && (
         <div className="coach-loading">
-          Thinking…
+          {C.thinking}
           <div className="loading-track">
             <div className="loading-bar" />
           </div>
@@ -37,28 +41,24 @@ export function CoachPanel({
       {!loading && error && (
         <div className="coach-error">
           {error}
-          <div className="meta">
-            If you see this often, check your `.env.local` and API key quota.
-          </div>
+          <div className="meta">{C.errorHint}</div>
         </div>
       )}
 
       {!loading && !error && !coach && (
-        <div className="muted">
-          Make a decision to get feedback (score + best action + why).
-        </div>
+        <div className="muted">{C.prompt}</div>
       )}
 
       {!loading && coach && (
         <div className="coach-body stack-sm">
           <div className="row-between">
-            <div className="label">Score</div>
-            <div className="stat-number">{coach.score}/100</div>
+            <div className="label">{C.score}</div>
+            <div className="stat-number">{fmt(C.scoreValue, { score: coach.score })}</div>
           </div>
 
           {eloChange != null && (
             <div className="muted-strong">
-              Elo change:{" "}
+              {C.eloChange}{" "}
               <span className={clsx("elo-change", eloChange >= 0 ? "elo-gain" : "elo-loss")}>
                 {eloChange >= 0 ? "+" : ""}
                 {eloChange}
@@ -67,7 +67,7 @@ export function CoachPanel({
           )}
 
           <div className="muted-strong">
-            <span className="label-inline">Best action:</span>{" "}
+            <span className="label-inline">{C.bestAction}</span>{" "}
             <span className="text-strong">{coach.bestAction.toUpperCase()}</span>
             {coach.bestRaiseSizeBb != null && (
               <span className="muted"> (${coach.bestRaiseSizeBb.toFixed(2)})</span>

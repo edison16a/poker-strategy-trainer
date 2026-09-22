@@ -1,9 +1,14 @@
 "use client";
 
-import type { GameMode, TrainingState } from "@/lib/types";
+import type { GameMode, TrainingState } from "@/domain/types";
 import { CardView } from "./CardView";
-import { cardToString } from "@/lib/cards";
+import { cardToString } from "@/domain/cards";
+import { COPY } from "@/data/copy";
 
+/**
+ * Community cards with the street and pot. Cards are keyed by their face so
+ * a newly dealt card mounts fresh and plays the flip animation.
+ */
 export function Board({ state, gameMode }: { state: TrainingState; gameMode: GameMode }) {
   const flop = state.board.flop ?? null;
   const turn = state.board.turn;
@@ -14,11 +19,11 @@ export function Board({ state, gameMode }: { state: TrainingState; gameMode: Gam
     <div className="panel board-panel">
       <div className="row-between">
         <div>
-          <div className="label">Board</div>
+          <div className="label">{COPY.board.board}</div>
           <div className="title-sm">{state.street}</div>
         </div>
         <div className="text-right">
-          <div className="label">Pot</div>
+          <div className="label">{COPY.board.pot}</div>
           <div className="title-sm">${state.potBb.toFixed(2)}</div>
         </div>
       </div>

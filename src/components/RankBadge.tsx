@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import type { RankName } from "@/lib/types";
-import { rankImagePath } from "@/lib/ranks";
+import type { RankName } from "@/domain/types";
+import { rankImagePath } from "@/domain/ranks";
+import { COPY } from "@/data/copy";
 
 export function RankBadge({ rank }: { rank: RankName }) {
   return (
@@ -17,7 +18,7 @@ export function RankBadge({ rank }: { rank: RankName }) {
         />
       </div>
       <div>
-        <div className="label">Rank</div>
+        <div className="label">{COPY.ranks.rank}</div>
         <div className="title-sm">{rank}</div>
       </div>
     </div>

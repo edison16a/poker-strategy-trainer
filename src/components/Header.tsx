@@ -1,15 +1,12 @@
 "use client";
 
-import type { GameMode } from "@/lib/types";
+import type { GameMode } from "@/domain/types";
 import { Brain, BarChart3, SkipForward, Gamepad2 } from "lucide-react";
 import clsx from "clsx";
+import { GAME_MODES, GAME_MODE_ORDER } from "@/data/game-modes";
+import { COPY } from "@/data/copy";
 
-const MODE_LABELS: Record<GameMode, string> = {
-  HANDS: "Hands",
-  HANDS_PLUS: "Playthrough",
-  GAME: "Full Game",
-};
-
+/** Title, mode toggle, stats button and the next-hand button. */
 export function Header({
   onShowStats,
   onNextHand,
@@ -30,8 +27,8 @@ export function Header({
           <Brain className="icon" />
         </div>
         <div>
-          <div className="title">Poker Strategy Trainer</div>
-          <div className="subtitle">Poker Puzzles + AI Coaching + Outs Training</div>
+          <div className="title">{COPY.app.title}</div>
+          <div className="subtitle">{COPY.app.subtitle}</div>
         </div>
       </div>
 
@@ -39,24 +36,24 @@ export function Header({
         <div className="mode-toggle">
           <div className="mode-toggle-shell">
             <Gamepad2 className="icon" />
-            <div className="mode-toggle-buttons" role="group" aria-label="Game mode">
-              {(Object.keys(MODE_LABELS) as GameMode[]).map((key, idx, arr) => (
+            <div className="mode-toggle-buttons" role="group" aria-label={COPY.header.modeGroupLabel}>
+              {GAME_MODE_ORDER.map((key, idx, arr) => (
                 <button
                   key={key}
                   className={clsx("mode-btn", key === gameMode && "active", idx === 0 && "first", idx === arr.length - 1 && "last")}
                   onClick={() => onChangeMode(key)}
                   type="button"
                 >
-                  {MODE_LABELS[key]}
+                  {GAME_MODES[key].label}
                 </button>
               ))}
             </div>
           </div>
         </div>
 
-        <button onClick={onShowStats} className="btn header-btn" title="Stats">
+        <button onClick={onShowStats} className="btn header-btn" title={COPY.header.stats}>
           <BarChart3 className="icon" />
-          <span>Stats</span>
+          <span>{COPY.header.stats}</span>
         </button>
         <button onClick={onNextHand} className="btn btn-accent header-btn" title={nextLabel}>
           <SkipForward className="icon" />
