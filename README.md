@@ -11,8 +11,7 @@ Try it out here: https://poker-strats.vercel.app/
 
 ## Screenshots
 
-<img width="966" height="605" alt="Screenshot 2026-01-20 at 1 33 24 PM" src="https://github.com/user-attachments/assets/c25e423f-4c53-49a4-84d0-6397334aa16a" />
-<img width="1033" height="787" alt="Screenshot 2026-01-20 at 1 33 49 PM" src="https://github.com/user-attachments/assets/769291a5-10de-43f7-8aab-399687ccda3f" />
+<img width="984" height="604" alt="image" src="https://github.com/user-attachments/assets/fc2a9f0c-2aaf-4908-8f84-dd5a342fe627" />
 
 ## How it plays
 
