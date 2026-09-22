@@ -1,0 +1,18 @@
+:root {
+  color-scheme: dark;
+  --bg: #05070d;
+  --bg-alt: #0d111a;
+  --surface: rgba(18, 21, 30, 0.9);
+  --surface-soft: rgba(22, 25, 35, 0.75);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #e6eaf3;
+  --muted: #9aa3b5;
+  --muted-2: #7f879a;
+  --accent-emerald: #34d399;
+  --accent-cyan: #22d3ee;
+  --accent-amber: #fbbf24;
+  --accent-rose: #fb7185;
+  --card-radius: 18px;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+}

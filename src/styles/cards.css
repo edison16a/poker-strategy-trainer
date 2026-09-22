@@ -1,0 +1,122 @@
+.card-shell {
+  --card-w: 84px;
+  --card-h: 116px;
+  width: var(--card-w);
+  height: var(--card-h);
+  flex: 0 0 var(--card-w);
+  border-radius: 10px;
+  border: 1px solid #d7dce5;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+.card-shell.small {
+  --card-w: 72px;
+  --card-h: 112px;
+  width: var(--card-w);
+  height: var(--card-h);
+  padding: 12px;
+}
+
+.card-face {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.card-back {
+  background: #0a0d16;
+  border: 1px solid #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.35));
+}
+
+.card-back-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.35));
+}
+
+.card-empty {
+  border: 1px solid #d7dce5;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-flip {
+  animation: flip-in 0.7s ease;
+  transform-style: preserve-3d;
+}
+
+@keyframes flip-in {
+  0% {
+    transform: rotateY(90deg);
+    opacity: 0;
+  }
+  60% {
+    transform: rotateY(-6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.card-rank {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.card-rank.bottom {
+  align-self: flex-end;
+  transform: rotate(180deg);
+}
+
+.card-rank .suit {
+  margin-left: 2px;
+}
+
+.card-suit {
+  font-size: 30px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.card-face.red {
+  color: #c1121f;
+}
+
+.card-face.dark {
+  color: #0f172a;
+}
+
+.board-panel .card-shell {
+  background: #ffffff;
+}
+
+.board-panel .card-back {
+  background: #0a0d16;
+  border-color: #111827;
+}
+
+.board-panel .card-back .card-back-inner {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.35));
+}

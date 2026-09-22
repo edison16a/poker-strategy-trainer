@@ -1,0 +1,33 @@
+.rank-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rank-top {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.rank-row.current {
+  border-color: rgba(52, 211, 153, 0.4);
+  background: rgba(52, 211, 153, 0.08);
+}
+
+.rank-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

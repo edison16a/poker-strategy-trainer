@@ -1,0 +1,24 @@
+.board-panel {
+  background: var(--surface-soft);
+}
+
+.board-cards {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.board-footer {
+  margin-top: 12px;
+}
+
+.hero-hand {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

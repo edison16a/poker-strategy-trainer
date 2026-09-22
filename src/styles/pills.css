@@ -1,0 +1,76 @@
+.verdict-pill {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  letter-spacing: 0.04em;
+}
+
+.verdict-pill.great {
+  border-color: rgba(52, 211, 153, 0.45);
+  background: rgba(52, 211, 153, 0.2);
+  color: #e0fbea;
+  box-shadow: 0 8px 22px rgba(52, 211, 153, 0.24);
+}
+
+.verdict-pill.perfect {
+  border-color: rgba(94, 234, 212, 0.6);
+  background: rgba(94, 234, 212, 0.25);
+  color: #d2fff5;
+  box-shadow: 0 10px 26px rgba(94, 234, 212, 0.28);
+}
+
+.verdict-pill.good {
+  border-color: rgba(52, 211, 153, 0.3);
+  background: rgba(52, 211, 153, 0.12);
+  color: #b6f0d3;
+}
+
+.verdict-pill.neutral {
+  border-color: rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbe5a1;
+}
+
+.verdict-pill.not-ideal {
+  border-color: rgba(251, 191, 36, 0.32);
+  background: rgba(251, 191, 36, 0.1);
+  color: #ffe4aa;
+}
+
+.verdict-pill.bad {
+  border-color: rgba(251, 113, 133, 0.3);
+  background: rgba(251, 113, 133, 0.12);
+  color: #ffd1da;
+}
+
+.result-pill {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.result-pill.win {
+  border-color: rgba(52, 211, 153, 0.35);
+  background: rgba(52, 211, 153, 0.16);
+  color: #d6f7e7;
+}
+
+.result-pill.lose {
+  border-color: rgba(251, 113, 133, 0.3);
+  background: rgba(251, 113, 133, 0.14);
+  color: #ffd5dd;
+}
+
+.result-pill.chop {
+  border-color: rgba(34, 211, 238, 0.3);
+  background: rgba(34, 211, 238, 0.14);
+  color: #d2f5ff;
+}
+
+.result-pill.fold {
+  color: var(--muted);
+}

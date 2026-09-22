@@ -1,0 +1,103 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--border-strong);
+  background: #0f121a;
+  box-shadow: var(--shadow);
+  z-index: 1;
+}
+
+.modal-card.modal-card-wide {
+  max-width: 900px;
+  width: min(94vw, 900px);
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.runout-elo-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f5e1a8;
+  font-weight: 600;
+}
+
+.congrats-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  overflow: hidden;
+}
+.congrats-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 1;
+}
+
+.congrats-title {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.congrats-text {
+  font-size: 16px;
+  color: var(--muted-2);
+  max-width: 360px;
+}
+
+.congrats-rank {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.congrats-rank img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.congrats-rank-name {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.stats-footer {
+  margin-top: 12px;
+}

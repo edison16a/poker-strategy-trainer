@@ -1,0 +1,29 @@
+.outs-panel .meta {
+  margin-top: 10px;
+}
+
+.result-banner {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.result-perfect {
+  border-color: rgba(52, 211, 153, 0.3);
+  background: rgba(52, 211, 153, 0.12);
+  color: #b6f0d3;
+}
+
+.result-close {
+  border-color: rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbe5a1;
+}
+
+.result-wrong {
+  border-color: rgba(251, 113, 133, 0.3);
+  background: rgba(251, 113, 133, 0.12);
+  color: #ffd1da;
+}
