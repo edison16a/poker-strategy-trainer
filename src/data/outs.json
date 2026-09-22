@@ -3,7 +3,10 @@
   "openEndedOuts": 8,
   "gutshotOuts": 4,
   "comboOverlap": 1,
-  "ruleOf": { "FLOP": 4, "TURN": 2 },
+  "ruleOf": {
+    "FLOP": 4,
+    "TURN": 2
+  },
   "closeTolerance": 2,
   "labels": {
     "noStraightDraw": "No straight draw",
@@ -18,21 +21,60 @@
     "gutshotDisplay": "Straight draw"
   },
   "explanations": [
-    { "match": "flush",      "text": "Flush draw: 9 cards of that suit remain in the deck." },
-    { "match": "open-ended", "text": "Open-ended straight draw: 4 cards on each end = 8 outs." },
-    { "match": "gutshot",    "text": "Gutshot straight draw: 1 rank completes it from each side = 4 outs." },
-    { "match": "combo",      "text": "Combo draw: outs from both straight and flush draws combined (overlap removed)." },
-    { "match": "trips",      "text": "Trips draw: pairing the board card rank to make trips." },
-    { "match": "set",        "text": "Set draw: pairing your pocket pair into trips." },
-    { "match": "two pair",   "text": "Two pair/full house outs: pairing your other hole card on a paired board." },
-    { "match": "full house", "text": "Two pair/full house outs: pairing your other hole card on a paired board." }
+    {
+      "match": "combo",
+      "text": "Combo draw: outs from both straight and flush draws combined (overlap removed)."
+    },
+    {
+      "match": "flush",
+      "text": "Flush draw: 9 cards of that suit remain in the deck."
+    },
+    {
+      "match": "open-ended",
+      "text": "Open-ended straight draw: 4 cards on each end = 8 outs."
+    },
+    {
+      "match": "gutshot",
+      "text": "Gutshot straight draw: 1 rank completes it from each side = 4 outs."
+    },
+    {
+      "match": "trips",
+      "text": "Trips draw: pairing the board card rank to make trips."
+    },
+    {
+      "match": "set",
+      "text": "Set draw: pairing your pocket pair into trips."
+    },
+    {
+      "match": "two pair",
+      "text": "Two pair/full house outs: pairing your other hole card on a paired board."
+    },
+    {
+      "match": "full house",
+      "text": "Two pair/full house outs: pairing your other hole card on a paired board."
+    }
   ],
   "fallbackExplanation": "Draw: {outs} outs based on visible cards.",
   "potOddsChart": [
-    { "bet": "Call ⅓-pot",     "need": "Need ~20%" },
-    { "bet": "Call ½-pot",     "need": "Need ~25%" },
-    { "bet": "Call ⅔-pot",     "need": "Need ~29%" },
-    { "bet": "Call pot-sized", "need": "Need ~33%" },
-    { "bet": "Call 2× pot",    "need": "Need ~40%" }
+    {
+      "bet": "Call ⅓-pot",
+      "need": "Need ~20%"
+    },
+    {
+      "bet": "Call ½-pot",
+      "need": "Need ~25%"
+    },
+    {
+      "bet": "Call ⅔-pot",
+      "need": "Need ~29%"
+    },
+    {
+      "bet": "Call pot-sized",
+      "need": "Need ~33%"
+    },
+    {
+      "bet": "Call 2× pot",
+      "need": "Need ~40%"
+    }
   ]
 }

@@ -12,7 +12,9 @@ export type OutsExplanation = { match: string; text: string };
  * documented approximation rather than a derived value.
  *
  * `explanations` are matched by substring against the lowercased draw label,
- * in order; the first hit wins. `ruleOf` maps a street to its multiplier for
+ * in order; the first hit wins. "combo" must come before "flush" because the
+ * combo label contains the word flush; the original checked flush first, so
+ * a 16-out combo draw was explained as a 9-out flush draw. `ruleOf` maps a street to its multiplier for
  * the "outs times 4 / times 2" equity estimate.
  */
 export const OUTS = raw as {
