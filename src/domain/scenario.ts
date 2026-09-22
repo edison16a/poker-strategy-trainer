@@ -58,15 +58,16 @@ export function generateTrainingSpot(
   const villainPos = pick(VILLAIN_POSITIONS, rng);
   const effectiveStackBb = SCENARIO.effectiveStackBb;
 
-  // Three opponents each roll an action. Bets get a placeholder size of 0
-  // until the aggressor is chosen below.
+  // Three opponents each roll an action. Before the fix a roll of BET
+  // stayed on the record with a size of 0 even when that opponent was not
+  // the aggressor. The table showed those as "Check" (a zero-sized bet
+  // renders as a check), but the coach counted them as bets and raises, so
+  // "opponents aggression: 2" appeared with one bet on the table and the
+  // multiway penalty fired. Non-aggressors now check outright.
   const oppNames = SCENARIO.opponentNames;
   const opponentActions: OpponentActionRecord[] = oppNames.map((name) => {
-    const act = simpleOpponentHeuristic(street, rng);
-    if (act === "BET") {
-      return { name, action: act, sizeBb: 0 };
-    }
-    return { name, action: act };
+    simpleOpponentHeuristic(street, rng);
+    return { name, action: "CHECK" };
   });
 
   const primary = pick([0, 1, 2], rng);
@@ -82,10 +83,6 @@ export function generateTrainingSpot(
     opponentActions[primary] = { name: oppNames[primary], action: type, sizeBb: betSizeBb };
     facing = { type, sizeBb: betSizeBb };
     potBb = Math.round((potBb + betSizeBb) * 10) / 10;
-  } else {
-    for (let i = 0; i < opponentActions.length; i++) {
-      opponentActions[i] = { name: oppNames[i], action: "CHECK" };
-    }
   }
 
   const outsInfo = computeOutsInfo(heroHand, boardUpTo, street) ?? undefined;
