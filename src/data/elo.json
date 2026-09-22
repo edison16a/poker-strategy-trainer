@@ -1,0 +1,28 @@
+{
+  "randomGain": { "spreadRatio": 0.2, "minSpread": 2, "minGain": 1 },
+  "decisionTiers": [
+    { "minScore": 100, "base": 500 },
+    { "minScore": 96,  "base": 425 },
+    { "minScore": 90,  "base": 330 },
+    { "minScore": 75,  "base": 250 },
+    { "minScore": 55,  "base": 185 },
+    { "minScore": 40,  "base": -50 },
+    { "minScore": 20,  "base": -70 },
+    { "minScore": 11,  "base": -90 },
+    { "minScore": 0,   "base": -150 }
+  ],
+  "runout": {
+    "stayedIn": { "win": 60, "chop": 20, "lose": -60 },
+    "folded":   { "win": -30, "chop": 10, "lose": 40 }
+  },
+  "outsQuiz": {
+    "maxAttempts": 2,
+    "bonusByDiff": [
+      { "firstAttempt": 240, "laterAttempt": 170 },
+      { "firstAttempt": 170, "laterAttempt": 108 },
+      { "firstAttempt": 108, "laterAttempt": 60 },
+      { "firstAttempt": 60,  "laterAttempt": 30 }
+    ],
+    "missPenalty": { "firstAttempt": -60, "laterAttempt": -120 }
+  }
+}
