@@ -95,8 +95,15 @@ export function conceptTags(
   return tags;
 }
 
-/** One-line summary keyed by verdict. */
+/**
+ * One-line summary keyed by verdict.
+ *
+ * Before the fix only "good" got the positive summary; "perfect" and
+ * "great" fell through to the "line loses EV" text, so the best decisions
+ * were told they were losing. Every verdict at or above "good" is positive.
+ */
 export function coachSummary(verdict: CoachVerdict): string {
   const S = COACH.copy.summaries;
-  return verdict === "good" ? S.good : verdict === "neutral" ? S.neutral : S.other;
+  if (verdict === "perfect" || verdict === "great" || verdict === "good") return S.good;
+  return verdict === "neutral" ? S.neutral : S.other;
 }
