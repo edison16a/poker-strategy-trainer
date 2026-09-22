@@ -4,7 +4,6 @@ import type {
 import { shuffledDeck } from "./cards";
 import { boardCardsUpTo, boardForStreet } from "./board";
 import { computeOutsInfo } from "./outs";
-import { simpleOpponentHeuristic } from "./opponents";
 import { type Rng, defaultRng, pick, randRange } from "./random";
 import { GAME_MODES, handPreferenceOption } from "@/data/game-modes";
 import { HERO_POSITIONS, VILLAIN_POSITIONS } from "@/data/positions";
@@ -27,9 +26,8 @@ function pickBetSizeBb(potBb: number, street: Street, rng: Rng): number {
  *
  * The whole runout and all three opponent hands are dealt now so a
  * playthrough can reveal them later without re-dealing. The order of
- * random draws (deck shuffle, street, positions, opponent rolls, aggressor,
- * bet roll, pot, bet size) is part of the contract: tests and the golden
- * comparison rely on it.
+ * random draws (deck shuffle, street, positions, aggressor, bet roll, pot,
+ * bet size) is fixed so seeded tests are repeatable.
  */
 export function generateTrainingSpot(
   mode: GameMode = "HANDS",
@@ -58,17 +56,10 @@ export function generateTrainingSpot(
   const villainPos = pick(VILLAIN_POSITIONS, rng);
   const effectiveStackBb = SCENARIO.effectiveStackBb;
 
-  // Three opponents each roll an action. Before the fix a roll of BET
-  // stayed on the record with a size of 0 even when that opponent was not
-  // the aggressor. The table showed those as "Check" (a zero-sized bet
-  // renders as a check), but the coach counted them as bets and raises, so
-  // "opponents aggression: 2" appeared with one bet on the table and the
-  // multiway penalty fired. Non-aggressors now check outright.
+  // Everyone checks unless chosen as the aggressor below. (Non-aggressors
+  // used to carry zero-sized BET records that the coach counted as bets.)
   const oppNames = SCENARIO.opponentNames;
-  const opponentActions: OpponentActionRecord[] = oppNames.map((name) => {
-    simpleOpponentHeuristic(street, rng);
-    return { name, action: "CHECK" };
-  });
+  const opponentActions: OpponentActionRecord[] = oppNames.map((name) => ({ name, action: "CHECK" }));
 
   const primary = pick([0, 1, 2], rng);
   const shouldBet = rng() < SCENARIO.facingBetChance;

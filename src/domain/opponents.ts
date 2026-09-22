@@ -4,19 +4,6 @@ import { evaluateHand, type HandEval } from "./hand-eval";
 import { type Rng, defaultRng } from "./random";
 import { SCENARIO } from "@/data/scenario";
 
-/**
- * Scripted opponent for the single-decision generator. It does not look at
- * its cards: it bets with a street-dependent probability and checks
- * otherwise. The bluff and bet thresholds both produce a bet; the split is
- * kept in the data so a future version can treat bluffs differently.
- */
-export function simpleOpponentHeuristic(street: Street, rng: Rng = defaultRng): OpponentAction {
-  const { bluffChance, betChance } = SCENARIO.opponentHeuristic[street];
-  const r = rng();
-  if (r < bluffChance || r < betChance) return "BET";
-  return "CHECK";
-}
-
 export type StreetActions = {
   actions: OpponentActionRecord[];
   facing: FacingBet | null;

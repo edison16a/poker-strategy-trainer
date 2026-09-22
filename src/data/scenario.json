@@ -1,28 +1,72 @@
 {
   "effectiveStackBb": 100,
-  "opponentNames": ["OppA", "OppB", "OppC"],
+  "opponentNames": [
+    "OppA",
+    "OppB",
+    "OppC"
+  ],
   "facingBetChance": 0.7,
-  "opponentHeuristic": {
-    "PREFLOP": { "bluffChance": 0.12, "betChance": 0.5 },
-    "FLOP":    { "bluffChance": 0.15, "betChance": 0.55 },
-    "TURN":    { "bluffChance": 0.2,  "betChance": 0.6 },
-    "RIVER":   { "bluffChance": 0.25, "betChance": 0.65 }
-  },
   "betSizeMultipliers": {
-    "PREFLOP": [1.6, 2.2, 2.8, 3.5, 4.2],
-    "FLOP":    [0.25, 0.33, 0.5, 0.66, 0.9],
-    "TURN":    [0.4, 0.6, 0.8, 1.1],
-    "RIVER":   [0.4, 0.6, 0.8, 1.1]
+    "PREFLOP": [
+      1.6,
+      2.2,
+      2.8,
+      3.5,
+      4.2
+    ],
+    "FLOP": [
+      0.25,
+      0.33,
+      0.5,
+      0.66,
+      0.9
+    ],
+    "TURN": [
+      0.4,
+      0.6,
+      0.8,
+      1.1
+    ],
+    "RIVER": [
+      0.4,
+      0.6,
+      0.8,
+      1.1
+    ]
   },
   "minBetBb": 1,
   "playthrough": {
-    "betBias": { "PREFLOP": 0.4, "FLOP": 0.5, "TURN": 0.55, "RIVER": 0.65 },
+    "betBias": {
+      "PREFLOP": 0.4,
+      "FLOP": 0.5,
+      "TURN": 0.55,
+      "RIVER": 0.65
+    },
     "strengthBetWeight": 0.04,
     "sizeMultipliers": {
-      "PREFLOP": [1.5, 2.2, 3, 4],
-      "FLOP":    [0.3, 0.5, 0.75],
-      "TURN":    [0.35, 0.6, 0.9, 1.2],
-      "RIVER":   [0.35, 0.6, 0.9, 1.2]
+      "PREFLOP": [
+        1.5,
+        2.2,
+        3,
+        4
+      ],
+      "FLOP": [
+        0.3,
+        0.5,
+        0.75
+      ],
+      "TURN": [
+        0.35,
+        0.6,
+        0.9,
+        1.2
+      ],
+      "RIVER": [
+        0.35,
+        0.6,
+        0.9,
+        1.2
+      ]
     },
     "callStrengthMin": 2,
     "callSkipChance": 0.2,

@@ -6,10 +6,9 @@ export type StreetTable<T> = Record<Street, T>;
 /**
  * Tuning for spot generation and the scripted opponents.
  *
- * `opponentHeuristic` drives the single-decision generator: a draw below
- * `bluffChance` or `betChance` produces a bet (the two thresholds are kept
- * separate because the original design distinguished bluffs, even though
- * both currently produce the same action).
+ * `facingBetChance` is how often a fresh spot has a bet to face; the
+ * aggressor is picked uniformly and sizes its bet from
+ * `betSizeMultipliers` for the street.
  *
  * `playthrough` drives the opponents on later streets: the strongest
  * opponent bets with probability `betBias + strength * strengthBetWeight`,
@@ -21,7 +20,6 @@ export const SCENARIO = raw as {
   effectiveStackBb: number;
   opponentNames: OpponentName[];
   facingBetChance: number;
-  opponentHeuristic: StreetTable<{ bluffChance: number; betChance: number }>;
   betSizeMultipliers: StreetTable<number[]>;
   minBetBb: number;
   playthrough: {
