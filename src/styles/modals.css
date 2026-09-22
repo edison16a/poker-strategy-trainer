@@ -11,7 +11,7 @@
 .modal-scrim {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--scrim);
 }
 
 .modal-card {
@@ -21,8 +21,7 @@
   padding: 20px;
   border-radius: 18px;
   border: 1px solid var(--border-strong);
-  background: #0f121a;
-  box-shadow: var(--shadow);
+  background: var(--surface);
   z-index: 1;
 }
 
@@ -44,8 +43,8 @@
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.05);
-  color: #f5e1a8;
+  background: var(--surface-raised);
+  color: var(--text-soft);
   font-weight: 600;
 }
 
@@ -84,7 +83,7 @@
   padding: 10px 14px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-raised);
 }
 
 .congrats-rank img {

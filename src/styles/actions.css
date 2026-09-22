@@ -21,7 +21,7 @@
 
 .raise-slider input[type="range"] {
   width: 100%;
-  accent-color: var(--accent-cyan);
+  accent-color: var(--accent);
 }
 
 .btn {
@@ -31,15 +31,15 @@
   gap: 8px;
   padding: 10px 16px;
   border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
   color: var(--text);
   font-weight: 600;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
 }
 
 .btn:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: var(--surface-hover);
 }
 
 .btn:active {
@@ -53,37 +53,43 @@
 }
 
 .btn-accent {
-  background: linear-gradient(120deg, rgba(52, 211, 153, 0.22), rgba(34, 211, 238, 0.18));
-  border-color: rgba(52, 211, 153, 0.32);
-  box-shadow: 0 10px 30px rgba(34, 211, 238, 0.15);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.btn-accent:hover {
+  background: var(--accent-strong);
+}
+
+.btn-accent .icon {
+  color: var(--on-accent);
 }
 
 .btn-disabled {
   opacity: 0.55;
-  filter: grayscale(0.7);
   cursor: not-allowed;
 }
 
 .btn.ghost,
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: var(--border);
+  background: transparent;
+  border-color: var(--border-strong);
 }
 
 .input {
   width: 132px;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
   color: var(--text);
   outline: none;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .input:focus {
-  border-color: var(--border-strong);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--accent);
 }
 
 .input-row {

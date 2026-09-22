@@ -5,16 +5,15 @@
   height: var(--card-h);
   flex: 0 0 var(--card-w);
   border-radius: 10px;
-  border: 1px solid #d7dce5;
-  background: #ffffff;
-  color: #0f172a;
+  border: 1px solid var(--card-border);
+  background: var(--card-face);
+  color: var(--card-ink);
   padding: 10px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
 }
 
 .card-shell.small {
@@ -33,26 +32,23 @@
 }
 
 .card-back {
-  background: #0a0d16;
-  border: 1px solid #111827;
+  background: var(--card-back);
+  border: 1px solid var(--card-back-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.35));
 }
 
 .card-back-inner {
   width: 100%;
   height: 100%;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.35));
+  border: 1px solid var(--card-back-border);
 }
 
 .card-empty {
-  border: 1px solid #d7dce5;
-  background: #ffffff;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--card-border);
+  background: var(--card-face);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,22 +97,18 @@
 }
 
 .card-face.red {
-  color: #c1121f;
+  color: var(--card-red);
 }
 
 .card-face.dark {
-  color: #0f172a;
+  color: var(--card-ink);
 }
 
 .board-panel .card-shell {
-  background: #ffffff;
+  background: var(--card-face);
 }
 
 .board-panel .card-back {
-  background: #0a0d16;
-  border-color: #111827;
-}
-
-.board-panel .card-back .card-back-inner {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.35));
+  background: var(--card-back);
+  border-color: var(--card-back-border);
 }

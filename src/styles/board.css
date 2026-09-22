@@ -1,5 +1,5 @@
 .board-panel {
-  background: var(--surface-soft);
+  background: var(--surface-raised);
 }
 
 .board-cards {
@@ -17,7 +17,7 @@
   padding: 12px 14px;
   border-radius: 16px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-raised);
   display: flex;
   flex-direction: column;
   gap: 8px;

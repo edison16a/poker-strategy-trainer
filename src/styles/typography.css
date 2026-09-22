@@ -42,7 +42,7 @@
 }
 
 .muted-strong {
-  color: #d7dcea;
+  color: var(--text-soft);
   font-size: 14px;
 }
 
@@ -56,7 +56,7 @@
 }
 
 .text-strong {
-  color: #f5f7ff;
+  color: var(--text);
   font-weight: 700;
 }
 

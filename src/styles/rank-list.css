@@ -12,7 +12,7 @@
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-raised);
 }
 
 .rank-top {
@@ -22,8 +22,8 @@
 }
 
 .rank-row.current {
-  border-color: rgba(52, 211, 153, 0.4);
-  background: rgba(52, 211, 153, 0.08);
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .rank-row-text {

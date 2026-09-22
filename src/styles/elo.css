@@ -6,12 +6,13 @@
   font-size: 12px;
 }
 
+/* Gains take the accent; losses stay neutral so the palette holds to one colour. */
 .elo-gain {
-  color: #4ade80;
+  color: var(--accent);
 }
 
 .elo-loss {
-  color: #f87171;
+  color: var(--muted);
 }
 
 @keyframes elo-pop {

@@ -8,22 +8,22 @@
   border-radius: 14px;
   border: 1px solid var(--border);
   font-size: 14px;
+  background: var(--surface-raised);
 }
 
+/* Exact guesses take the accent; near misses and misses differ by border weight. */
 .result-perfect {
-  border-color: rgba(52, 211, 153, 0.3);
-  background: rgba(52, 211, 153, 0.12);
-  color: #b6f0d3;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
 }
 
 .result-close {
-  border-color: rgba(251, 191, 36, 0.3);
-  background: rgba(251, 191, 36, 0.12);
-  color: #fbe5a1;
+  border-color: var(--border-strong);
+  color: var(--text-soft);
 }
 
 .result-wrong {
-  border-color: rgba(251, 113, 133, 0.3);
-  background: rgba(251, 113, 133, 0.12);
-  color: #ffd1da;
+  border-color: var(--border);
+  color: var(--muted);
 }

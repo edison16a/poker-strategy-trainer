@@ -1,18 +1,43 @@
+/*
+ * Design tokens. Every colour in the other style modules references one of
+ * these, so the palette is changed here and nowhere else.
+ *
+ * The palette is black surfaces, neutral greys for text and borders, and a
+ * single teal accent. Flat fills only: no gradients, glows or blur.
+ */
 :root {
   color-scheme: dark;
-  --bg: #05070d;
-  --bg-alt: #0d111a;
-  --surface: rgba(18, 21, 30, 0.9);
-  --surface-soft: rgba(22, 25, 35, 0.75);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --text: #e6eaf3;
-  --muted: #9aa3b5;
-  --muted-2: #7f879a;
-  --accent-emerald: #34d399;
-  --accent-cyan: #22d3ee;
-  --accent-amber: #fbbf24;
-  --accent-rose: #fb7185;
+
+  /* Surfaces, darkest to lightest */
+  --bg: #000000;
+  --surface: #0d0d0d;
+  --surface-raised: #161616;
+  --surface-hover: #1f1f1f;
+
+  --border: #262626;
+  --border-strong: #3a3a3a;
+
+  /* Text */
+  --text: #f5f5f5;
+  --text-soft: #d4d4d4;
+  --muted: #a3a3a3;
+  --muted-2: #737373;
+
+  /* The one accent */
+  --accent: #2dd4bf;
+  --accent-strong: #5eead4;
+  --accent-soft: rgba(45, 212, 191, 0.14);
+  --accent-border: rgba(45, 212, 191, 0.5);
+  --on-accent: #000000;
+
+  /* Playing cards keep their conventional face colours */
+  --card-face: #ffffff;
+  --card-border: #d4d4d4;
+  --card-ink: #111111;
+  --card-red: #c1121f;
+  --card-back: #161616;
+  --card-back-border: #2e2e2e;
+
   --card-radius: 18px;
-  --shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+  --scrim: rgba(0, 0, 0, 0.75);
 }
