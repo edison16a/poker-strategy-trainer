@@ -1,0 +1,127 @@
+{
+  "tuning": {
+    "fallbackScore": 60,
+    "maxReasons": 6,
+    "madeHandEquity": {
+      "HIGH_CARD": 25, "ONE_PAIR": 50, "TWO_PAIR": 80, "THREE_OF_A_KIND": 88, "STRAIGHT": 90,
+      "FLUSH": 94, "FULL_HOUSE": 97, "FOUR_OF_A_KIND": 99, "STRAIGHT_FLUSH": 100
+    },
+    "madeHandDefaultEquity": 50,
+    "onePair": { "topPair": 12, "secondPair": 6, "middlePair": -4, "lowPair": -10, "cap": 86 },
+    "twoPair": { "topPairBonus": 6, "highKickerRank": 12, "cap": 94 },
+    "tripsFloor": 90,
+    "streetVolatility": { "FLOP": 6, "TURN": 3 },
+    "heroCategoryBoost": {
+      "STRAIGHT_FLUSH": 24, "FOUR_OF_A_KIND": 22, "FULL_HOUSE": 20, "FLUSH": 16, "STRAIGHT": 14,
+      "THREE_OF_A_KIND": 12, "TWO_PAIR": 10, "ONE_PAIR": 4, "HIGH_CARD": 0
+    },
+    "boost": { "topTwoPair": 6, "topTwoHighRank": 13, "topTwoLowRank": 11, "topPair": 4, "secondPair": 2 },
+    "vulnerability": { "lowPair": 8, "secondPair": 6, "highCard": 10 },
+    "texture": { "twoTone": 3, "connected": 3, "connectedGap": 2, "FLOP": 2, "TURN": 1 },
+    "decision": {
+      "raiseEdgeMin": 10, "raiseEquityMin": 55, "callEdgeMin": -5,
+      "raiseMultiplier": 2.2, "raiseMinBb": 4,
+      "openThreshold": 70, "openPotFraction": 0.55, "openMinBb": 3
+    },
+    "preflopDecision": {
+      "raiseStrength": 80, "raiseMultiplier": 2.3, "raiseMinBb": 4, "openPotFraction": 0.65, "openMinBb": 3,
+      "aggressiveStrength": 70, "aggressiveEdgeMin": -8, "aggressiveMultiplier": 2.1, "aggressiveMinBb": 3,
+      "aggressiveOpenPotFraction": 0.55, "aggressiveOpenMinBb": 3,
+      "callStrength": 58
+    },
+    "alignment": { "match": 14, "raiseWhenCall": -6, "callWhenRaise": -5, "other": -14 },
+    "discipline": {
+      "underPriced": { "margin": 10, "penalty": -12 },
+      "bigBetWeak": { "facingPctMin": 60, "equityMax": 50, "penalty": -6 },
+      "multiwayWeak": { "aggressorsMin": 2, "equityMax": 55, "penalty": -4 }
+    },
+    "preflopBonus": {
+      "foldTrash": 22, "foldSpeculativeFacing": 12,
+      "callSpeculative": 8, "callStrongFacing": 10,
+      "raisePremium": 20, "raiseStrong": 12
+    },
+    "score": { "base": 52, "edgeWeight": 0.35, "madeBoostWeight": 0.45, "bias": 10 },
+    "floors": { "matchedBest": 50, "foldTrash": 72, "raisePremium": 82, "raiseStrong": 72 },
+    "verdicts": [
+      { "minScore": 95, "verdict": "perfect" },
+      { "minScore": 80, "verdict": "great" },
+      { "minScore": 60, "verdict": "good" },
+      { "minScore": 50, "verdict": "neutral" },
+      { "minScore": 30, "verdict": "not-ideal" },
+      { "minScore": 0,  "verdict": "bad" }
+    ]
+  },
+  "preflopProfiles": {
+    "premiumPair":     { "tier": "premium",     "strength": 95, "equityHint": 82, "label": "Premium pair ({hand})" },
+    "highPair":        { "tier": "strong",      "strength": 86, "equityHint": 76, "label": "High pair ({hand})" },
+    "mediumPair":      { "tier": "strong",      "strength": 78, "equityHint": 70, "label": "Medium pair ({hand})" },
+    "smallPair":       { "tier": "speculative", "strength": 68, "equityHint": 62, "label": "Small pair ({hand})" },
+    "suitedBroadway":  { "tier": "premium",     "strength": 88, "equityHint": 74, "label": "Suited broadway ({hand})" },
+    "broadway":        { "tier": "strong",      "strength": 80, "equityHint": 68, "label": "Broadway combo ({hand})" },
+    "suitedAce":       { "tier": "strong",      "strength": 78, "equityHint": 68, "label": "Suited ace ({hand})" },
+    "weakSuitedAce":   { "tier": "speculative", "strength": 70, "equityHint": 60, "label": "Wheel/weak suited ace ({hand})" },
+    "bigAce":          { "tier": "strong",      "strength": 76, "equityHint": 66, "label": "Big ace ({hand})" },
+    "suitedConnector": { "tier": "strong",      "strength": 74, "equityHint": 64, "label": "Suited connectors ({hand})" },
+    "suitedGapper":    { "tier": "speculative", "strength": 66, "equityHint": 58, "label": "Suited connector/gapper ({hand})" },
+    "suitedHand":      { "tier": "speculative", "strength": 62, "equityHint": 56, "label": "Suited hand ({hand})" },
+    "playableHigh":    { "tier": "speculative", "strength": 60, "equityHint": 56, "label": "Playable high cards ({hand})" },
+    "trash":           { "tier": "trash",       "strength": 38, "equityHint": 36, "label": "Trash/ragged hand ({hand})" }
+  },
+  "copy": {
+    "madeHandDetail": {
+      "topPair": "Top pair/overpair",
+      "secondPair": "Second pair",
+      "middlePair": "Middle pair (vulnerable)",
+      "lowPair": "Low pair—thin value",
+      "topTwo": "Top two with high kickers",
+      "twoPair": "Two pair"
+    },
+    "futureCards": {
+      "PREFLOP": "3 streets to come",
+      "FLOP": "turn + river to come",
+      "TURN": "river to come",
+      "RIVER": "showdown card already dealt"
+    },
+    "notes": {
+      "madeHand": "Made hand: {note}",
+      "madeHandDetail": " ({detail})",
+      "boardTexture": "Board texture: {board}",
+      "noBoard": "No board cards yet.",
+      "drawOuts": "Draw outs: {outs} ({label}) ≈ {pct}%.",
+      "preflopStrength": "Preflop strength: {label} (≈{equity}% vs random)."
+    },
+    "reasons": {
+      "hand": "Hand: {hand}{onBoard}. {madeHand} ({futureCards}). Pot odds need ~{potOdds}% equity; estimated strength is ~{equity}%.",
+      "onBoard": " on {board}",
+      "preflopPlan": "Preflop plan: {label}. Folding rags keeps Elo intact; aggression is rewarded when starting hand strength warrants it.",
+      "facing": "Facing {type} of ~{facingPct}% pot; opponents aggression: {aggressors} bets/raises.",
+      "potOddsMath": "Pot odds math: calling {bet} into {pot} needs ~{required}% equity; your line assumes ~{equity}%, so EV is {evSign} over time.",
+      "evPositive": "positive",
+      "evNegative": "negative",
+      "draws": "Draws: {outs} outs ({label}) ≈ {pct}% to improve.",
+      "ruleOfFour": "Rule of 4/2 check: outs imply ~{pct}% by river; compare to the ~{potOdds}% needed to justify a call/raise this street.",
+      "drawNoBet": "With no bet to face, your draw equity (~{pct}%) makes betting an option to add fold equity or checking to realize your card for free.",
+      "bestRaise": "Raising with {hand} vs {board} leverages fold equity and pushes value from worse hands; strong made hand supports aggression.",
+      "noBoard": "no board",
+      "bestCall": "Calling keeps dominated hands in; {hand}{retains}.",
+      "bestCallRetains": " retains ~{equity}% versus the price",
+      "bestFold": "Folding is best: {hand} lacks equity versus the price and aggression shown."
+    },
+    "summaries": {
+      "good": "Strong line versus pot odds and position.",
+      "neutral": "Playable decision; small tweaks in sizing/line could add EV.",
+      "other": "Line loses EV against the price offered; consider tighter folds or delayed aggression."
+    },
+    "tags": {
+      "potOddsPositive": "pot-odds+",
+      "potOddsNegative": "pot-odds-",
+      "draws": "draws",
+      "madeHand": "made-hand",
+      "raise": "value/semibluff",
+      "fold": "discipline",
+      "call": "realize-equity",
+      "preflopTrash": "preflop-discipline",
+      "preflopPlayable": "preflop-starting-hand"
+    }
+  }
+}
