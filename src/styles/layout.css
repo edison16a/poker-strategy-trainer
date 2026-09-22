@@ -1,59 +1,59 @@
 .page-shell {
-  padding: 24px 16px 32px;
+  padding: var(--space-6) var(--space-5) var(--space-7);
   min-height: 100vh;
 }
 
 .page-content {
-  max-width: 1180px;
+  max-width: 1320px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-6);
 }
 
 .grid-main {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: var(--space-5);
   align-items: start;
 }
 
 @media (min-width: 1024px) {
   .grid-main {
-    grid-template-columns: minmax(320px, 360px) 1fr;
-    gap: 20px;
+    grid-template-columns: minmax(340px, 400px) 1fr;
+    gap: var(--space-6);
   }
 }
 
 .stack-sm {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .stack-md {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-5);
 }
 
 .stack-lg {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--space-5);
 }
 
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--card-radius);
-  padding: 16px;
+  padding: var(--space-5);
 }
 
 .panel-hero {
   position: relative;
   overflow: hidden;
-  padding: 20px;
+  padding: var(--space-6);
   border-radius: 24px;
   background: var(--surface);
   border: 1px solid var(--border-strong);

@@ -1,10 +1,10 @@
 .outs-panel .meta {
-  margin-top: 10px;
+  margin-top: var(--space-3);
 }
 
 .result-banner {
-  margin-top: 12px;
-  padding: 12px;
+  margin-top: var(--space-4);
+  padding: var(--space-4);
   border-radius: 14px;
   border: 1px solid var(--border);
   font-size: 14px;

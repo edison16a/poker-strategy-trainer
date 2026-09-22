@@ -1,8 +1,8 @@
 .card-row {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  margin: 14px 0;
+  gap: var(--space-4);
+  margin: var(--space-4) 0 var(--space-5);
 }
 
 .info-line {
@@ -34,19 +34,19 @@
 .action-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 10px;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
 }
 
 .opp-showdown {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .opp-showdown-cards {
   display: flex;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .opp-winner {
@@ -70,15 +70,18 @@
 }
 
 .action-box .label {
-  padding-top: 6px;
+  padding-top: var(--space-2);
 }
 
 .action-box {
-  padding: 10px;
+  padding: var(--space-4);
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: var(--surface-raised);
-  min-height: 64px;
+  background: var(--surface);
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .action-box.self {

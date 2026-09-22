@@ -20,8 +20,8 @@
 .progress-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 10px;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .rank-icon {
@@ -38,7 +38,7 @@
 .rank-badge {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-4);
 }
 
 .rank-image-frame {

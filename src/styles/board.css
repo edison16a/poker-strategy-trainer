@@ -3,9 +3,10 @@
 }
 
 .board-cards {
-  margin-top: 14px;
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-2);
   display: flex;
-  gap: 10px;
+  gap: var(--space-4);
   justify-content: center;
 }
 
@@ -14,11 +15,11 @@
 }
 
 .hero-hand {
-  padding: 12px 14px;
+  padding: var(--space-5);
   border-radius: 16px;
   border: 1px solid var(--border);
   background: var(--surface-raised);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-3);
 }
