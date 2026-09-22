@@ -1,0 +1,23 @@
+{
+  "order": ["HANDS", "HANDS_PLUS", "GAME"],
+  "modes": {
+    "HANDS": {
+      "label": "Hands",
+      "nextLabel": "Next hand",
+      "startingStreets": "preference",
+      "startingPotBb": { "min": 4.5, "max": 9.5 }
+    },
+    "HANDS_PLUS": {
+      "label": "Playthrough",
+      "nextLabel": "Next hand",
+      "startingStreets": ["PREFLOP", "FLOP", "TURN", "RIVER"],
+      "startingPotBb": { "min": 4.5, "max": 9.5 }
+    },
+    "GAME": {
+      "label": "Full Game",
+      "nextLabel": "Next game",
+      "startingStreets": ["PREFLOP"],
+      "startingPotBb": { "min": 1.2, "max": 5 }
+    }
+  }
+}

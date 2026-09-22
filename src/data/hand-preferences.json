@@ -1,0 +1,29 @@
+{
+  "default": "ANY",
+  "options": [
+    {
+      "value": "ANY",
+      "label": "Mixed",
+      "desc": "Hands mode uses a mix of preflop, flop, turn, and river spots.",
+      "streets": ["PREFLOP", "FLOP", "TURN", "RIVER"]
+    },
+    {
+      "value": "PREFLOP",
+      "label": "Pre-Flop",
+      "desc": "Hands only give preflop training spots.",
+      "streets": ["PREFLOP"]
+    },
+    {
+      "value": "OUTS",
+      "label": "Outs",
+      "desc": "Hands always start with 1-2 cards left (flop or turn) for outs practice.",
+      "streets": ["FLOP", "TURN"]
+    },
+    {
+      "value": "FINAL",
+      "label": "Final",
+      "desc": "Hands always start with 0 cards left (river-only decisions).",
+      "streets": ["RIVER"]
+    }
+  ]
+}
