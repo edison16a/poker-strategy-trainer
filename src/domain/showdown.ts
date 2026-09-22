@@ -131,8 +131,11 @@ export function resolveShowdown({
   const heroHandStr = heroHand.map(cardToString).join(" ");
   const decisionBoardStr = formatBoard(decisionBoard);
   const finalBoardStr = formatBoard(board);
+  // Before the fix this used the raw record name ("OppA") while the line
+  // below used the display name ("Opp 1"), so one sentence of the runout
+  // text named opponents differently from the rest of the screen.
   const decisionOppDesc = decisionVillain
-    ? `${decisionVillain.name} (${decisionVillain.evaluation.label})`
+    ? `${formatDisplayName(decisionVillain)} (${decisionVillain.evaluation.label})`
     : COPY.showdown.opponents;
   const showdownOppDesc = showdownVillain
     ? `${formatDisplayName(showdownVillain)} (${showdownVillain.evaluation.label})`
