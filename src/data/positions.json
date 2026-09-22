@@ -1,0 +1,16 @@
+{
+  "heroPositions": ["BTN", "CO", "HJ", "UTG"],
+  "villainPositions": ["BB", "SB", "MP"],
+  "timing": {
+    "BTN": "Last to act",
+    "CO": "Last to act",
+    "BB": "Last to act",
+    "UTG": "First to act",
+    "SB": "First to act",
+    "HJ": "Middle position",
+    "MP": "Middle position"
+  },
+  "unknownTiming": "Position",
+  "heroSeatIndex": { "UTG": 0, "HJ": 1, "CO": 3, "BTN": 3 },
+  "coachAggressionBonus": { "BTN": 4, "CO": 4, "HJ": 2, "UTG": 0 }
+}
