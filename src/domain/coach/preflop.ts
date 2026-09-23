@@ -1,7 +1,7 @@
 import type { Card } from "../types";
-import { cardToString, rankValue } from "../cards";
+import { formatCards, rankValue } from "../cards";
 import { fmt } from "../text";
-import { COACH, type PreflopProfileKey, type PreflopTier } from "@/data/coach";
+import { COACH, type PreflopCondition, type PreflopProfileKey, type PreflopTier } from "@/data/coach";
 
 export type PreflopProfile = {
   tier: PreflopTier;
@@ -10,6 +10,31 @@ export type PreflopProfile = {
   label: string;
 };
 
+/** The features of a two-card hand that the rule table conditions on. */
+export type HandFeatures = { pair: boolean; suited: boolean; hi: number; lo: number; gap: number };
+
+export function handFeatures(hand: [Card, Card]): HandFeatures {
+  const v1 = rankValue(hand[0].r);
+  const v2 = rankValue(hand[1].r);
+  return {
+    pair: v1 === v2,
+    suited: hand[0].s === hand[1].s,
+    hi: Math.max(v1, v2),
+    lo: Math.min(v1, v2),
+    gap: Math.abs(v1 - v2),
+  };
+}
+
+/** True when every condition present in `when` holds for the hand. */
+export function matchesCondition(f: HandFeatures, when: PreflopCondition = {}): boolean {
+  if (when.pair !== undefined && f.pair !== when.pair) return false;
+  if (when.suited !== undefined && f.suited !== when.suited) return false;
+  if (when.minHigh !== undefined && f.hi < when.minHigh) return false;
+  if (when.minLow !== undefined && f.lo < when.minLow) return false;
+  if (when.maxGap !== undefined && f.gap > when.maxGap) return false;
+  return true;
+}
+
 function profile(key: PreflopProfileKey, handStr: string): PreflopProfile {
   const row = COACH.preflopProfiles[key];
   return { tier: row.tier, strength: row.strength, equityHint: row.equityHint, label: fmt(row.label, { hand: handStr }) };
@@ -17,42 +42,15 @@ function profile(key: PreflopProfileKey, handStr: string): PreflopProfile {
 
 /**
  * Classifies a starting hand into a tier with a strength score and an
- * equity hint against a random hand. The predicates are ordered from most
- * to least specific, so a hand takes the first row it qualifies for; the
- * per-row numbers live in data/coach.json.
+ * equity hint against a random hand. The rules in data/coach.json are
+ * tried in order and the first match wins, so more specific rules (pairs,
+ * suited broadway) sit above general ones and the last rule is the
+ * catch-all. This used to be a chain of if statements with the thresholds
+ * inline; the rule table expresses the same chain as data.
  */
 export function preflopHandProfile(hand: [Card, Card]): PreflopProfile {
-  const [c1, c2] = hand;
-  const v1 = rankValue(c1.r);
-  const v2 = rankValue(c2.r);
-  const hi = Math.max(v1, v2);
-  const lo = Math.min(v1, v2);
-  const suited = c1.s === c2.s;
-  const pair = v1 === v2;
-  const gap = Math.abs(v1 - v2);
-  const handStr = hand.map(cardToString).join(" ");
-
-  if (pair) {
-    if (hi >= 13) return profile("premiumPair", handStr);
-    if (hi >= 10) return profile("highPair", handStr);
-    if (hi >= 7) return profile("mediumPair", handStr);
-    return profile("smallPair", handStr);
-  }
-
-  const isBroadway = hi >= 13 && lo >= 10;
-  const hasAce = hi === 14;
-  const suitedConnector = suited && gap === 1;
-  const suitedOneGap = suited && gap === 2;
-
-  if (isBroadway && suited) return profile("suitedBroadway", handStr);
-  if (isBroadway) return profile("broadway", handStr);
-  if (hasAce && suited && lo >= 9) return profile("suitedAce", handStr);
-  if (hasAce && suited && lo >= 5) return profile("weakSuitedAce", handStr);
-  if (hasAce && lo >= 10) return profile("bigAce", handStr);
-  if (suitedConnector && hi >= 9) return profile("suitedConnector", handStr);
-  if ((suitedConnector || suitedOneGap) && hi >= 8) return profile("suitedGapper", handStr);
-  if (suited && lo >= 7 && gap <= 3) return profile("suitedHand", handStr);
-  if (hi >= 12 && lo >= 8) return profile("playableHigh", handStr);
-
-  return profile("trash", handStr);
+  const f = handFeatures(hand);
+  const handStr = formatCards(hand);
+  const rule = COACH.preflopRules.find(r => matchesCondition(f, r.when)) ?? COACH.preflopRules[COACH.preflopRules.length - 1];
+  return profile(rule.profile, handStr);
 }
