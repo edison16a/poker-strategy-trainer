@@ -95,10 +95,24 @@
   },
   "stats": {
     "title": "Stats",
-    "totalHands": "Total hands",
-    "decisions": "Decisions",
-    "correctOuts": "Correct outs",
-    "lastCoachScore": "Last coach score",
+    "cards": [
+      {
+        "field": "totalHands",
+        "label": "Total hands"
+      },
+      {
+        "field": "totalDecisions",
+        "label": "Decisions"
+      },
+      {
+        "field": "correctOutsCount",
+        "label": "Correct outs"
+      },
+      {
+        "field": "lastCoachScore",
+        "label": "Last coach score"
+      }
+    ],
     "preferredHands": "Preferred Hands",
     "preferredHandsNote": "Affects Hands mode only",
     "preferredHandsGroupLabel": "Preferred hand types",

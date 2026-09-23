@@ -4,7 +4,7 @@ import { useState } from "react";
 import clsx from "clsx";
 import type { HandsPreference, PlayerProfile } from "@/domain/types";
 import { HAND_PREFERENCE_OPTIONS, handPreferenceOption } from "@/data/game-modes";
-import { COPY } from "@/data/copy";
+import { COPY, STAT_CARDS } from "@/data/copy";
 import { Modal } from "./ui/Modal";
 
 /**
@@ -43,22 +43,12 @@ export function StatsModal({
       </div>
 
       <div className="stat-grid">
-        <div className="stat-card">
-          <div className="label">{S.totalHands}</div>
-          <div className="stat-number">{profile.totalHands}</div>
-        </div>
-        <div className="stat-card">
-          <div className="label">{S.decisions}</div>
-          <div className="stat-number">{profile.totalDecisions}</div>
-        </div>
-        <div className="stat-card">
-          <div className="label">{S.correctOuts}</div>
-          <div className="stat-number">{profile.correctOutsCount}</div>
-        </div>
-        <div className="stat-card">
-          <div className="label">{S.lastCoachScore}</div>
-          <div className="stat-number">{profile.lastCoachScore ?? COPY.common.empty}</div>
-        </div>
+        {STAT_CARDS.map(card => (
+          <div className="stat-card" key={card.field}>
+            <div className="label">{card.label}</div>
+            <div className="stat-number">{profile[card.field] ?? COPY.common.empty}</div>
+          </div>
+        ))}
       </div>
 
       <div className="preferred-hands">

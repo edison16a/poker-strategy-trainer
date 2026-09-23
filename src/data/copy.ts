@@ -7,3 +7,12 @@ import raw from "./copy.json";
  * the component, and the spacing has to live somewhere.
  */
 export const COPY = raw;
+
+/**
+ * A tile in the stats grid: which profile counter it shows and its label.
+ * The profile type is the source of truth for field names, so the cast
+ * below keeps a typo in the JSON from compiling silently.
+ */
+export type StatCard = { field: "totalHands" | "totalDecisions" | "correctOutsCount" | "lastCoachScore"; label: string };
+
+export const STAT_CARDS = raw.stats.cards as StatCard[];
