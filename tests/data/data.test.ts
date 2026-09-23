@@ -10,6 +10,9 @@ import { OUTS } from "@/data/outs";
 import { COACH } from "@/data/coach";
 import { COPY } from "@/data/copy";
 import { UI } from "@/data/ui";
+import { STAT_CARDS } from "@/data/copy";
+import { CARD_RANKS, SUIT_INFO } from "@/data/cards";
+import { defaultProfile } from "@/features/profile/storage";
 import { CATEGORY_STRENGTH } from "@/domain/hand-eval";
 
 const STREETS = ["PREFLOP", "FLOP", "TURN", "RIVER"];
@@ -131,10 +134,31 @@ describe("coach.json", () => {
       expect(["premium", "strong", "speculative", "trash"]).toContain(row.tier);
       expect(row.label).toContain("{hand}");
     }
+    for (const rule of COACH.preflopRules) expect(COACH.preflopProfiles[rule.profile]).toBeDefined();
+    expect(COACH.preflopRules.at(-1)!.when).toBeUndefined();
+  });
+});
+
+describe("cards.json", () => {
+  it("has 13 ranks ascending to the ace and four suits with glyphs", () => {
+    expect(CARD_RANKS).toHaveLength(13);
+    expect(CARD_RANKS[0]).toBe("2");
+    expect(CARD_RANKS.at(-1)).toBe("A");
+    expect(SUIT_INFO.map(s => s.code).sort()).toEqual(["c", "d", "h", "s"]);
+    for (const s of SUIT_INFO) expect(s.symbol.length).toBe(1);
+    expect(SUIT_INFO.filter(s => s.red)).toHaveLength(2);
   });
 });
 
 describe("copy.json and ui.json", () => {
+  it("lists stat cards that name real profile fields", () => {
+    const profile = defaultProfile();
+    for (const card of STAT_CARDS) {
+      expect(card.field in profile || card.field === "lastCoachScore", card.field).toBe(true);
+      expect(card.label).toBeTruthy();
+    }
+  });
+
   it("has no empty strings and balanced placeholders", () => {
     for (const [path, s] of stringLeaves(COPY)) {
       expect(s.length, path).toBeGreaterThan(0);
