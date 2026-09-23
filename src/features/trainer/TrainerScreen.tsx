@@ -18,6 +18,7 @@ import { StatsModal } from "@/components/StatsModal";
 import { RankModal } from "@/components/RankModal";
 import { GAME_MODES } from "@/data/game-modes";
 import { ELO_RULES } from "@/data/elo";
+import { OUTS } from "@/data/outs";
 import { COPY } from "@/data/copy";
 
 /**
@@ -45,7 +46,8 @@ export function TrainerScreen() {
   }
 
   const facingCall = state.facing?.sizeBb ?? null;
-  const cardsToCome = state.street === "FLOP" || state.street === "TURN";
+  // The quiz runs on the streets that have a rule-of-4/2 multiplier.
+  const cardsToCome = state.street in OUTS.ruleOf;
 
   return (
     <div className="page-shell">

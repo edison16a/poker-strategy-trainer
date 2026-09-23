@@ -72,9 +72,9 @@ function evaluatePlayers(
       hand: heroHand,
       evaluation: evaluateHand([...heroHand, ...communityCards]),
     },
-    ...opponents.map((opp, idx) => ({
-      id: opp.name ?? `opp-${idx}`,
-      name: opp.name ?? fmt(COPY.showdown.opponent, { n: idx + 1 }),
+    ...opponents.map(opp => ({
+      id: opp.name,
+      name: opp.name,
       isHero: false,
       hand: opp.hand,
       evaluation: evaluateHand([...opp.hand, ...communityCards]),

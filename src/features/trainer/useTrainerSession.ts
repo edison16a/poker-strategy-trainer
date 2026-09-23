@@ -117,6 +117,11 @@ export function useTrainerSession(profile: PlayerProfile | null, setProfile: Pro
     resetForNewHand({ modeOverride: "HANDS", handsPrefOverride: handsPreference });
   }, [gameMode, handsPreference, resetForNewHand]);
 
+  /**
+   * Stores the new preference. The effect above deals the fresh Hands-mode
+   * spot once the profile updates; the handler used to deal one as well,
+   * so every preference change dealt two hands and kept the second.
+   */
   function changeHandsPreference(pref: HandsPreference) {
     if (handsPrefRef.current === pref) return;
     handsPrefRef.current = pref;
@@ -124,9 +129,6 @@ export function useTrainerSession(profile: PlayerProfile | null, setProfile: Pro
       if (!p || p.preferredHands === pref) return p;
       return { ...p, preferredHands: pref };
     });
-    if (gameMode === "HANDS") {
-      resetForNewHand({ modeOverride: "HANDS", handsPrefOverride: pref });
-    }
   }
 
   function nextHand() {
