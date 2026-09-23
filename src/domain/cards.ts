@@ -1,26 +1,20 @@
 import type { BoardView, Card, Rank, Suit } from "./types";
 import { type Rng, defaultRng, shuffle } from "./random";
+import { CARD_RANKS, SUITS, SUIT_BY_CODE } from "@/data/cards";
 
-export const SUITS: Suit[] = ["s", "h", "d", "c"];
-
-/** Ascending order; the index doubles as the rank's strength (see rankValue). */
-export const CARD_RANKS: Rank[] = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+export { CARD_RANKS, SUITS } from "@/data/cards";
 
 export function cardToString(c: Card): string {
   return `${c.r}${c.s}`;
 }
 
+/** The glyph shown on a card face for the suit. */
 export function prettySuit(s: Suit): string {
-  switch (s) {
-    case "s": return "♠";
-    case "h": return "♥";
-    case "d": return "♦";
-    case "c": return "♣";
-  }
+  return SUIT_BY_CODE[s].symbol;
 }
 
 export function isRed(s: Suit): boolean {
-  return s === "h" || s === "d";
+  return SUIT_BY_CODE[s].red;
 }
 
 /** Unshuffled 52-card deck, suits outer, ranks inner. */
