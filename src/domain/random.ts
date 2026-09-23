@@ -4,6 +4,8 @@
  * the previous implementation. Every default resolves to `Math.random` at
  * call time (not at import time) so a test can still stub the global.
  */
+import { roundTo } from "./math";
+
 export type Rng = () => number;
 
 export const defaultRng: Rng = () => Math.random();
@@ -15,9 +17,7 @@ export function pick<T>(arr: readonly T[], rng: Rng = defaultRng): T {
 
 /** Uniform float in [min, max), rounded to `precision` decimals. */
 export function randRange(min: number, max: number, precision = 2, rng: Rng = defaultRng): number {
-  const val = rng() * (max - min) + min;
-  const factor = 10 ** precision;
-  return Math.round(val * factor) / factor;
+  return roundTo(rng() * (max - min) + min, precision);
 }
 
 /** Fisher-Yates shuffle that returns a new array and leaves the input alone. */

@@ -5,6 +5,7 @@ import { shuffledDeck } from "./cards";
 import { boardCardsUpTo, boardForStreet } from "./board";
 import { computeOutsInfo } from "./outs";
 import { type Rng, defaultRng, pick, randRange } from "./random";
+import { roundTo } from "./math";
 import { GAME_MODES, handPreferenceOption } from "@/data/game-modes";
 import { HERO_POSITIONS, VILLAIN_POSITIONS } from "@/data/positions";
 import { SCENARIO } from "@/data/scenario";
@@ -18,7 +19,7 @@ export function startingStreets(mode: GameMode, handsPref: HandsPreference): Str
 /** Bet size as a multiple of the pot, street-dependent, never below the minimum. */
 function pickBetSizeBb(potBb: number, street: Street, rng: Rng): number {
   const raw = potBb * pick(SCENARIO.betSizeMultipliers[street], rng);
-  return Math.max(SCENARIO.minBetBb, Math.round(raw * 100) / 100);
+  return Math.max(SCENARIO.minBetBb, roundTo(raw, 2));
 }
 
 /**
@@ -73,7 +74,8 @@ export function generateTrainingSpot(
     const betSizeBb = pickBetSizeBb(potBb, street, rng);
     opponentActions[primary] = { name: oppNames[primary], action: type, sizeBb: betSizeBb };
     facing = { type, sizeBb: betSizeBb };
-    potBb = Math.round((potBb + betSizeBb) * 10) / 10;
+    // One decimal here, two everywhere else: kept as the original had it.
+    potBb = roundTo(potBb + betSizeBb, 1);
   }
 
   const outsInfo = computeOutsInfo(heroHand, boardUpTo, street) ?? undefined;

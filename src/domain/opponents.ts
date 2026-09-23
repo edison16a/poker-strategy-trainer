@@ -2,6 +2,7 @@ import type { BoardView, FacingBet, OpponentAction, OpponentActionRecord, Oppone
 import { boardCardsFromView } from "./cards";
 import { evaluateHand, type HandEval } from "./hand-eval";
 import { type Rng, defaultRng } from "./random";
+import { roundTo } from "./math";
 import { SCENARIO } from "@/data/scenario";
 
 export type StreetActions = {
@@ -41,7 +42,7 @@ export function opponentActionsForStreet(
   const shouldBet = rng() < (cfg.betBias[street] + strength * cfg.strengthBetWeight);
   const sizeMults = cfg.sizeMultipliers[street];
   const sizeBb = shouldBet
-    ? Math.max(SCENARIO.minBetBb, Math.round(potBb * sizeMults[Math.floor(rng() * sizeMults.length)] * 100) / 100)
+    ? Math.max(SCENARIO.minBetBb, roundTo(potBb * sizeMults[Math.floor(rng() * sizeMults.length)], 2))
     : 0;
   let facing: FacingBet | null = null;
   let newPot = potBb;
@@ -50,19 +51,19 @@ export function opponentActionsForStreet(
   const actions: OpponentActionRecord[] = opponentHands.map((opp, idx) => {
     if (shouldBet && idx === primary) {
       facing = { type: aggressiveAction as FacingBet["type"], sizeBb };
-      newPot = Math.round((newPot + sizeBb) * 100) / 100;
+      newPot = roundTo(newPot + sizeBb, 2);
       return { name: opp.name, action: aggressiveAction, sizeBb };
     }
     if (shouldBet) {
       const evalScore = evaluated.find(e => e.idx === idx)?.eval.scoreVector[0] ?? 0;
       if (evalScore >= cfg.callStrengthMin && rng() > cfg.callSkipChance) {
-        newPot = Math.round((newPot + sizeBb) * 100) / 100;
+        newPot = roundTo(newPot + sizeBb, 2);
         return { name: opp.name, action: "CALL", sizeBb };
       }
       if (rng() < cfg.foldChance) return { name: opp.name, action: "FOLD" };
       // Before the fix this call did not add its chips to the pot, unlike
       // the strong-hand call above, so the pot understated what was in it.
-      newPot = Math.round((newPot + sizeBb) * 100) / 100;
+      newPot = roundTo(newPot + sizeBb, 2);
       return { name: opp.name, action: "CALL", sizeBb };
     }
     return { name: opp.name, action: "CHECK" };
