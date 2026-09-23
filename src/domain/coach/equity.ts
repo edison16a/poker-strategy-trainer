@@ -75,11 +75,12 @@ export function equityFromMadeHand(handEval: HandEval, state: TrainingState): Ma
 
 /**
  * Hero equity estimate with the notes the coach shows. Draw equity from
- * the outs info can only raise the estimate, never lower it.
+ * the outs info can only raise the estimate, never lower it. The caller
+ * passes the hero's evaluation so it is computed once per decision.
  */
-export function equityEstimate(state: TrainingState): { equity: number; notes: string[] } {
+export function equityEstimate(state: TrainingState, heroEval: HandEval): { equity: number; notes: string[] } {
   const notesCopy = COACH.copy.notes;
-  const made = equityFromMadeHand(heroHandEval(state), state);
+  const made = equityFromMadeHand(heroEval, state);
   const notes: string[] = [
     fmt(notesCopy.madeHand, { note: made.note }) + (made.detail ? fmt(notesCopy.madeHandDetail, { detail: made.detail }) : ""),
   ];

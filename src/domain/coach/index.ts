@@ -33,7 +33,8 @@ export function evaluateDecision(state: TrainingState, heroAction: PlayerAction,
   void _raiseSizeBb;
   const preflopProfile = state.street === "PREFLOP" ? preflopHandProfile(state.heroHand) : null;
   const potOdds = potOddsPct(state.potBb, state.facing?.sizeBb ?? null);
-  const equityInfo = equityEstimate(state);
+  const heroEval = heroHandEval(state);
+  const equityInfo = equityEstimate(state, heroEval);
   const equityNotes = preflopProfile
     ? [
         fmt(COACH.copy.notes.preflopStrength, { label: preflopProfile.label, equity: preflopProfile.equityHint }),
@@ -45,7 +46,6 @@ export function evaluateDecision(state: TrainingState, heroAction: PlayerAction,
     equity = Math.max(equity, preflopProfile.equityHint);
   }
   const edge = equity - potOdds;
-  const heroEval = heroHandEval(state);
 
   const posAggression = COACH_AGGRESSION_BONUS[state.heroPos];
   const oppAggression = state.opponentActions.filter(a => a.action === "BET" || a.action === "RAISE").length;
