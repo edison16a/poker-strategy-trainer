@@ -1,5 +1,5 @@
 import type { Card, TrainingState } from "../types";
-import { boardCardsFromView, cardToString, rankValue } from "../cards";
+import { boardCardsFromView, formatCards, rankValue } from "../cards";
 import { evaluateHand, type HandEval } from "../hand-eval";
 import { fmt } from "../text";
 import { COACH } from "@/data/coach";
@@ -83,7 +83,7 @@ export function equityEstimate(state: TrainingState): { equity: number; notes: s
   const notes: string[] = [
     fmt(notesCopy.madeHand, { note: made.note }) + (made.detail ? fmt(notesCopy.madeHandDetail, { detail: made.detail }) : ""),
   ];
-  const boardString = boardCardsFromView(state.board).map(cardToString).join(" ");
+  const boardString = formatCards(boardCardsFromView(state.board));
   notes.push(boardString ? fmt(notesCopy.boardTexture, { board: boardString }) : notesCopy.noBoard);
 
   let equity = made.equity;

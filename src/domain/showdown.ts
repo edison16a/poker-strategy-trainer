@@ -1,5 +1,5 @@
 import type { BoardView, Card, FullBoard, PlayerAction } from "./types";
-import { boardCardsFromView, cardToString } from "./cards";
+import { boardCardsFromView, formatCards } from "./cards";
 import { fullBoardCards } from "./board";
 import { bestHands, evaluateHand, type HandEval } from "./hand-eval";
 import { fmt } from "./text";
@@ -83,7 +83,7 @@ function evaluatePlayers(
 }
 
 function formatBoard(b: BoardView): string {
-  return boardCardsFromView(b).map(cardToString).join(" ");
+  return formatCards(boardCardsFromView(b));
 }
 
 /** Evaluates every hand on the full board and on the decision board, and writes the narrative. */
@@ -128,7 +128,7 @@ export function resolveShowdown({
     runoutNote = notes.behind;
   }
 
-  const heroHandStr = heroHand.map(cardToString).join(" ");
+  const heroHandStr = formatCards(heroHand);
   const decisionBoardStr = formatBoard(decisionBoard);
   const finalBoardStr = formatBoard(board);
   // Before the fix this used the raw record name ("OppA") while the line

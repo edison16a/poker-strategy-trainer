@@ -1,5 +1,5 @@
 import type { CoachAction, CoachVerdict, TrainingState } from "../types";
-import { boardCardsFromView, cardToString } from "../cards";
+import { boardCardsFromView, formatCards } from "../cards";
 import type { HandEval } from "../hand-eval";
 import { fmt } from "../text";
 import type { PreflopProfile } from "./preflop";
@@ -28,8 +28,8 @@ export type ReasonInputs = {
 export function buildReasons(i: ReasonInputs): string[] {
   const { state, heroEval, bestAction, equity, potOdds, edge, facingPctPot, oppAggression } = i;
   const reasons: string[] = [];
-  const heroStr = state.heroHand.map(cardToString).join(" ");
-  const boardStr = boardCardsFromView(state.board).map(cardToString).join(" ");
+  const heroStr = formatCards(state.heroHand);
+  const boardStr = formatCards(boardCardsFromView(state.board));
 
   reasons.push(fmt(R.hand, {
     hand: heroStr,

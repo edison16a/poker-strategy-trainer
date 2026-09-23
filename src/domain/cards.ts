@@ -8,6 +8,11 @@ export function cardToString(c: Card): string {
   return `${c.r}${c.s}`;
 }
 
+/** "As Kd 7h": the space-separated form used in coach text and showdown copy. */
+export function formatCards(cards: readonly Card[]): string {
+  return cards.map(cardToString).join(" ");
+}
+
 /** The glyph shown on a card face for the suit. */
 export function prettySuit(s: Suit): string {
   return SUIT_BY_CODE[s].symbol;
