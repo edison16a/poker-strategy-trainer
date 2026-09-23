@@ -51,13 +51,15 @@ src/
     trainer/    the session hook, the screen, table seats, dialogs
   components/   presentational components (cards, panels, modals)
   domain/       pure logic with no React: cards, hand evaluation, outs,
-                Elo, ranks, spot generation, opponents, showdown, coach/
+                Elo, ranks, spot generation, opponents, showdown, labels,
+                raise-slider math, coach/
   data/         JSON data files plus a small typed loader for each
-  styles/       one CSS module per screen area; tokens.css holds every colour
-tests/          Vitest suites mirroring domain/, data/ and features/
+  styles/       one CSS module per screen area; tokens.css holds every
+                colour and the spacing scale
+tests/          Vitest suites for domain/, data/, features/ and components/
 ```
 
-`src/domain` is where the poker logic lives. Nothing in it touches the DOM, and every random draw takes an injectable `rng`, so the generators can be replayed under a seed in tests. `src/domain/coach` is the scoring engine, split into the preflop hand table, the equity estimate, the best-line decision, the score components, and the reason text.
+`src/domain` is where the poker logic lives. Nothing in it touches the DOM, and every random draw takes an injectable `rng`, so the generators can be replayed under a seed in tests. `src/domain/coach` is the scoring engine, split into the preflop classifier, the equity estimate, the best-line decision, the score components, and the reason text. Text that a component shows but a test wants to check (seat captions, the runout reason, the slider default) lives in `domain/labels.ts` and `domain/raise.ts` rather than in the component.
 
 `useTrainerSession` in `src/features/trainer` is the state machine behind the screen: dealing, the coach round trip, the outs quiz, the animated opponent reveal, and the showdown.
 
@@ -67,6 +69,7 @@ Every list, table, tuning number, and user-facing string sits in `src/data/*.jso
 
 | File | What it holds |
 | --- | --- |
+| `cards.json` | The deck: rank order, suit glyphs, which suits are red |
 | `ranks.json` | The rank ladder: Elo range, percentile caption, penalty factor, badge image per tier |
 | `game-modes.json` | Mode labels, next-hand button text, starting streets, starting pot range |
 | `hand-preferences.json` | The Hands-mode preference options and the streets each one deals |
@@ -74,8 +77,8 @@ Every list, table, tuning number, and user-facing string sits in `src/data/*.jso
 | `elo.json` | Score-to-Elo tiers, gain jitter, playthrough runout rewards, outs quiz bonuses |
 | `scenario.json` | Bet sizing, the facing-bet rate, playthrough opponent thresholds, animation timing |
 | `outs.json` | Outs per draw type, the combo overlap, draw labels and explanations, the pot-odds chart |
-| `coach.json` | Every scoring constant, the preflop starting-hand table, and the reason and summary templates |
-| `copy.json` | All UI text, grouped by screen area |
+| `coach.json` | Every scoring constant, the preflop starting-hand rules and rows, and the reason and summary templates |
+| `copy.json` | All UI text, grouped by screen area, plus the list of stat tiles |
 | `ui.json` | Raise slider bounds, flash timing, the storage key, the API path |
 
 Templates use `{name}` placeholders that `fmt` in `src/domain/text.ts` fills in. Strings that begin or end with a space are deliberate; they are joined to a value in the component.
@@ -84,6 +87,8 @@ Templates use `{name}` placeholders that `fmt` in `src/domain/text.ts` fills in.
 
 - **A rank tier**: add an object to `ladder` in `ranks.json` with a contiguous Elo range (`maxElo` is `null` only on the top tier) and drop the badge PNG in `public/ranks/`. The ladder, the progress bar, the rank list, and the congratulations dialog pick it up.
 - **A hand preference**: add an object to `options` in `hand-preferences.json` with a `value`, `label`, `desc`, and the `streets` it deals. The Stats dialog and the generator read the list.
+- **A preflop hand class**: add a row to `preflopProfiles` in `coach.json` (tier, strength, equity hint, label) and a rule to `preflopRules` naming it. Rules are tried in order and the first match wins, so put it above any broader rule it should beat. Conditions are `pair`, `suited`, `minHigh`, `minLow`, and `maxGap`; the last rule has no conditions and catches everything else.
+- **A stat tile**: add `{ "field", "label" }` to `stats.cards` in `copy.json`, where `field` is a counter on the profile.
 - **A pot-odds chart row**: add a `{ "bet", "need" }` pair to `potOddsChart` in `outs.json`.
 - **A draw explanation**: add a `{ "match", "text" }` pair to `explanations` in `outs.json`. Matching is by substring on the lowercased label, first hit wins, so put specific entries before general ones.
 - **A tuning change**: edit the number in `elo.json`, `scenario.json`, or `coach.json`.
