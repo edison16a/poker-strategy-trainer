@@ -2,26 +2,14 @@
 
 import type { ReactElement } from "react";
 import clsx from "clsx";
-import type { GameMode, OpponentActionRecord, TrainingState } from "@/domain/types";
+import type { GameMode, TrainingState } from "@/domain/types";
 import type { ShowdownResult } from "@/domain/showdown";
+import { opponentActionLabel } from "@/domain/labels";
 import { fmt } from "@/domain/text";
 import { CardView } from "@/components/CardView";
 import { COPY } from "@/data/copy";
 import { HERO_SEAT_INDEX, POSITION_TIMING, UNKNOWN_POSITION_TIMING } from "@/data/positions";
 import type { TurnPointer } from "./useTrainerSession";
-
-/** "Bet $2.50", "Check", ... A zero-sized bet or raise reads as a check. */
-function actionLabel(opp: OpponentActionRecord | undefined): string {
-  if (!opp) return COPY.common.empty;
-  const size = opp.sizeBb ?? 0;
-  const S = COPY.seats;
-  if (opp.action === "BET") return size > 0 ? fmt(S.bet, { size: size.toFixed(2) }) : S.check;
-  if (opp.action === "RAISE") return size > 0 ? fmt(S.raise, { size: size.toFixed(2) }) : S.check;
-  if (opp.action === "CHECK") return S.check;
-  if (opp.action === "CALL") return S.call;
-  if (opp.action === "FOLD") return S.fold;
-  return opp.action;
-}
 
 /**
  * The row of four seat boxes under the hero's cards: three opponents and
@@ -63,7 +51,7 @@ export function TableSeats({
         <div className="label">
           {isWinner ? <span className="winner-flag">{fmt(COPY.seats.opponentWon, { label })}</span> : label}
         </div>
-        <div className="muted-strong">{actionLabel(opp)}</div>
+        <div className="muted-strong">{opponentActionLabel(opp)}</div>
       </div>
     );
   };

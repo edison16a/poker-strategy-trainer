@@ -4,24 +4,11 @@ import type { PlayerAction } from "@/domain/types";
 import { useState } from "react";
 import clsx from "clsx";
 import { fmt } from "@/domain/text";
+import { maxRaiseFor, suggestedRaiseFor } from "@/domain/raise";
 import { COPY } from "@/data/copy";
 import { UI } from "@/data/ui";
 
 const S = UI.raiseSlider;
-
-/** Slider ceiling: a multiple of the bet being faced, never below the floor. */
-function maxRaiseFor(callAmount: number | null | undefined): number {
-  return Math.max(S.maxFloorBb, (callAmount ?? S.fallbackCallBb) * S.maxCallMultiplier);
-}
-
-/** Default slider position: a sensible re-raise of the bet faced, or the base open size. */
-function suggestedRaiseFor(callAmount: number | null | undefined): number {
-  if (callAmount && callAmount > 0) {
-    const suggested = Math.max(S.minBb, Number((callAmount * S.suggestedCallMultiplier).toFixed(2)));
-    return Math.min(suggested, maxRaiseFor(callAmount));
-  }
-  return S.defaultBb;
-}
 
 /** Fold, call/check and raise buttons plus the raise-size slider. */
 export function ActionBar({

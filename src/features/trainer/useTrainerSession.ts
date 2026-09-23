@@ -13,6 +13,7 @@ import { resolveShowdown, type ShowdownResult } from "@/domain/showdown";
 import { applyPenaltyFactor, eloDeltaFromScore, outsQuizBonus, runoutEloDelta } from "@/domain/elo";
 import { penaltyFactorForRank } from "@/domain/ranks";
 import { fmt } from "@/domain/text";
+import { runoutReason, signedDelta } from "@/domain/labels";
 import { DEFAULT_HANDS_PREFERENCE } from "@/data/game-modes";
 import { ELO_RULES } from "@/data/elo";
 import { SCENARIO } from "@/data/scenario";
@@ -28,14 +29,6 @@ export type OutsGrade = "perfect" | "close" | "wrong";
 export type TurnPointer = number | null;
 
 type ProfileSetter = (update: (p: PlayerProfile | null) => PlayerProfile | null) => void;
-
-function runoutReason(result: ShowdownResult): string {
-  const R = COPY.runout.reasons;
-  if (!result.heroFolded) {
-    return result.heroWouldResult === "win" ? R.stayedWon : result.heroWouldResult === "chop" ? R.stayedChopped : R.stayedLost;
-  }
-  return result.heroWouldResult === "lose" ? R.foldedSaved : R.foldedAhead;
-}
 
 /**
  * The state machine behind the trainer screen: the current spot, the
@@ -154,7 +147,7 @@ export function useTrainerSession(profile: PlayerProfile | null, setProfile: Pro
     setProfile(p => (p ? withEloDelta(p, delta, true) : p));
     setEloChange(prev => (prev ?? 0) + delta);
     setRunoutEloNote(fmt(COPY.runout.eloNote, {
-      delta: `${delta >= 0 ? "+" : ""}${delta}`,
+      delta: signedDelta(delta),
       reason: runoutReason(result),
     }));
   }
