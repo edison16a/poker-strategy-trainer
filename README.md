@@ -1,17 +1,43 @@
-# Poker Strategy Trainer
+<p align="center">
+  <img src="assets/brand/logo.svg" width="72" height="72" alt="Poker Strategy Trainer logo">
+</p>
+
+<h1 align="center">Poker Strategy Trainer</h1>
+
+<p align="center">
+  A fast poker puzzle trainer that grades your fold, call, or raise and teaches the math behind it.<br>
+  <a href="https://poker-strats.vercel.app/">poker-strats.vercel.app</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/license-unspecified-2dd4bf" alt="License: unspecified">
+  <img src="https://img.shields.io/badge/node-20%2B-2dd4bf" alt="Node 20 or newer">
+  <img src="https://img.shields.io/badge/platform-web-2dd4bf" alt="Platform: web">
+</p>
+
+## Screenshots
+
+<img width="984" height="604" alt="The trainer: rank and Elo on the left, the table and action bar on the right" src="https://github.com/user-attachments/assets/fc2a9f0c-2aaf-4908-8f84-dd5a342fe627" />
+
+<table>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/hands-coach.png" alt="Hands mode with coach feedback after a fold"></td>
+    <td width="50%"><img src="assets/screenshots/playthrough-showdown.png" alt="Playthrough mode at showdown with every hand revealed"></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="assets/screenshots/runout.png" alt="Detailed runout dialog"></td>
+    <td width="50%"><img src="assets/screenshots/stats.png" alt="Stats dialog with the preferred hands picker"></td>
+  </tr>
+</table>
+
+## About
 
 Want to get better at poker? **Poker Train** is a fast, user-friendly **poker puzzle trainer** that helps you improve decision-making and poker math.
-
-Try it out here: https://poker-strats.vercel.app/
 
 - 🧠 **AI Coach Feedback**: tells you if your move (fold, call, or raise) was good or bad, and **why**
 - 📈 **Elo + Rank Progression**: climb from **Bronze to Champion**
 - 🧮 **Outs Trainer**: learn how to **calculate outs** and quick equity (Rule of 2 and 4)
 - 💾 **Saves locally**: progress is stored in your browser
-
-## Screenshots
-
-<img width="984" height="604" alt="image" src="https://github.com/user-attachments/assets/fc2a9f0c-2aaf-4908-8f84-dd5a342fe627" />
 
 ## How it plays
 
