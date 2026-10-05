@@ -19,17 +19,6 @@
 
 <img width="984" height="604" alt="The trainer: rank and Elo on the left, the table and action bar on the right" src="https://github.com/user-attachments/assets/fc2a9f0c-2aaf-4908-8f84-dd5a342fe627" />
 
-<table>
-  <tr>
-    <td width="50%"><img src="assets/screenshots/hands-coach.png" alt="Hands mode with coach feedback after a fold"></td>
-    <td width="50%"><img src="assets/screenshots/playthrough-showdown.png" alt="Playthrough mode at showdown with every hand revealed"></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="assets/screenshots/runout.png" alt="Detailed runout dialog"></td>
-    <td width="50%"><img src="assets/screenshots/stats.png" alt="Stats dialog with the preferred hands picker"></td>
-  </tr>
-</table>
-
 ## About
 
 Want to get better at poker? **Poker Train** is a fast, user-friendly **poker puzzle trainer** that helps you improve decision-making and poker math.
